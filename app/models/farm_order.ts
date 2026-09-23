@@ -7,6 +7,7 @@ import User from './user.js'
 import Workspace from './workspace.js'
 
 export type FarmOrderStatus = 'pending' | 'approved' | 'sold' | 'cancelled'
+export type OrderRecurringInterval = 'weekly' | 'biweekly' | 'monthly'
 
 export default class FarmOrder extends SuperBaseModel {
   static table = 'orders'
@@ -37,6 +38,9 @@ export default class FarmOrder extends SuperBaseModel {
 
   @column.dateTime()
   declare deliveryDate: DateTime | null
+
+  @column()
+  declare recurringInterval: OrderRecurringInterval | null
 
   @column.dateTime()
   declare soldAt: DateTime | null

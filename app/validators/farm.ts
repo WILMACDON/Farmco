@@ -57,6 +57,7 @@ export const createOrderValidator = vine.compile(
     contact: vine.string().trim().maxLength(255).optional().nullable(),
     orderDate: vine.string().trim().optional(),
     deliveryDate: vine.string().trim().optional().nullable(),
+    recurringInterval: vine.enum(['weekly', 'biweekly', 'monthly'] as const).optional().nullable(),
     items: vine
       .array(
         vine.object({
@@ -66,6 +67,23 @@ export const createOrderValidator = vine.compile(
       )
       .minLength(1),
     clientEntryId: optionalClientEntryId.clone(),
+  }),
+)
+
+export const updateOrderValidator = vine.compile(
+  vine.object({
+    customerName: vine.string().trim().minLength(1).maxLength(255),
+    contact: vine.string().trim().maxLength(255).optional().nullable(),
+    deliveryDate: vine.string().trim().optional().nullable(),
+    recurringInterval: vine.enum(['weekly', 'biweekly', 'monthly'] as const).optional().nullable(),
+    items: vine
+      .array(
+        vine.object({
+          size: eggSize.clone(),
+          crates: vine.number().withoutDecimals().min(1),
+        }),
+      )
+      .minLength(1),
   }),
 )
 

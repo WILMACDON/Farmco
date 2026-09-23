@@ -4,7 +4,7 @@ import { DateTime } from 'luxon'
 import BirdRecord from '#models/bird_record'
 import EggRecord from '#models/egg_record'
 import type { EggSize } from '#models/egg_stock'
-import type { FarmOrderStatus } from '#models/farm_order'
+import type { FarmOrderStatus, OrderRecurringInterval } from '#models/farm_order'
 import FarmOrder from '#models/farm_order'
 import FeedRecord from '#models/feed_record'
 import OrderItem from '#models/order_item'
@@ -19,6 +19,7 @@ export interface CreateOrderInput {
   contact?: string | null
   orderDate?: string
   deliveryDate?: string | null
+  recurringInterval?: OrderRecurringInterval | null
   items: Array<{ size: EggSize; crates: number }>
   clientEntryId?: string
 }
@@ -34,9 +35,16 @@ export interface OrderListFilters {
 
 function parseOptionalDate(value?: string | null): DateTime | null {
   if (!value) return null
-  const parsed = DateTime.fromISO(value)
+  // Accept date-only (yyyy-MM-dd) or full ISO
+  const parsed = value.length <= 10 ? DateTime.fromISO(value, { zone: 'utc' }).startOf('day') : DateTime.fromISO(value)
   if (!parsed.isValid) throw new Exception('Invalid date', { status: 422 })
   return parsed
+}
+
+function advanceDueDate(base: DateTime, interval: OrderRecurringInterval): DateTime {
+  if (interval === 'weekly') return base.plus({ weeks: 1 })
+  if (interval === 'biweekly') return base.plus({ weeks: 2 })
+  return base.plus({ months: 1 })
 }
 
 export class FarmOrderService {
@@ -96,6 +104,7 @@ export class FarmOrderService {
 
     const orderDate = parseOptionalDate(payload.orderDate) ?? DateTime.now()
     const deliveryDate = parseOptionalDate(payload.deliveryDate ?? null)
+    const recurringInterval = payload.recurringInterval ?? null
     const trx = await db.transaction()
 
     try {
@@ -109,6 +118,7 @@ export class FarmOrderService {
           approvedBy: null,
           orderDate,
           deliveryDate,
+          recurringInterval,
           soldAt: null,
           clientEntryId: payload.clientEntryId ?? null,
         },
@@ -135,6 +145,8 @@ export class FarmOrderService {
           status: 'pending',
           customerName: order.customerName,
           items: payload.items,
+          deliveryDate: deliveryDate?.toISO() ?? null,
+          recurringInterval,
         },
         quantity: payload.items.reduce((sum, i) => sum + i.crates, 0),
         recordedAt: orderDate,
@@ -166,6 +178,100 @@ export class FarmOrderService {
 
     const order = await this.create(workspaceId, userId, { ...payload, clientEntryId }, farmRole)
     return { orderId: order.id, created: true }
+  }
+
+  async update(
+    workspaceId: string,
+    userId: string,
+    orderId: string,
+    payload: {
+      customerName: string
+      contact?: string | null
+      deliveryDate?: string | null
+      recurringInterval?: OrderRecurringInterval | null
+      items: Array<{ size: EggSize; crates: number }>
+    },
+  ): Promise<FarmOrder> {
+    if (!payload.customerName?.trim()) {
+      throw new Exception('Customer name is required', { status: 422 })
+    }
+    if (!payload.items?.length) {
+      throw new Exception('Order must include at least one item', { status: 422 })
+    }
+    for (const item of payload.items) {
+      if (!Number.isInteger(item.crates) || item.crates <= 0) {
+        throw new Exception('Each order item must have a positive crate count', { status: 422 })
+      }
+    }
+
+    const deliveryDate = parseOptionalDate(payload.deliveryDate ?? null)
+    const recurringInterval = payload.recurringInterval ?? null
+    const trx = await db.transaction()
+
+    try {
+      const order = await FarmOrder.query({ client: trx })
+        .where('workspace_id', workspaceId)
+        .where('id', orderId)
+        .forUpdate()
+        .firstOrFail()
+
+      await order.load('items')
+
+      if (order.status !== 'pending' && order.status !== 'approved') {
+        throw new Exception(`Cannot edit order in status ${order.status}`, { status: 422 })
+      }
+
+      const before = {
+        customerName: order.customerName,
+        contact: order.contact,
+        deliveryDate: order.deliveryDate?.toISO() ?? null,
+        recurringInterval: order.recurringInterval,
+        items: order.items.map((item) => ({ size: item.size, crates: item.crates })),
+      }
+
+      order.customerName = payload.customerName.trim()
+      order.contact = payload.contact ?? null
+      order.deliveryDate = deliveryDate
+      order.recurringInterval = recurringInterval
+      await order.useTransaction(trx).save()
+
+      await OrderItem.query({ client: trx }).where('order_id', order.id).delete()
+      await OrderItem.createMany(
+        payload.items.map((item) => ({
+          orderId: order.id,
+          size: item.size,
+          crates: item.crates,
+        })),
+        { client: trx },
+      )
+
+      await activityLogService.log({
+        workspaceId,
+        userId,
+        action: 'order.update',
+        entity: 'order',
+        entityId: order.id,
+        before,
+        after: {
+          customerName: order.customerName,
+          contact: order.contact,
+          deliveryDate: order.deliveryDate?.toISO() ?? null,
+          recurringInterval: order.recurringInterval,
+          items: payload.items,
+        },
+        quantity: payload.items.reduce((sum, i) => sum + i.crates, 0),
+        recordedAt: DateTime.now(),
+        trx,
+      })
+
+      await trx.commit()
+      await FarmCacheService.invalidateAfterOrderChange(workspaceId)
+      await order.load('items')
+      return order
+    } catch (error) {
+      await trx.rollback()
+      throw error
+    }
   }
 
   async approve(workspaceId: string, userId: string, orderId: string): Promise<FarmOrder> {
@@ -305,6 +411,57 @@ export class FarmOrderService {
         recordedAt: soldAt,
         trx,
       })
+
+      if (order.recurringInterval) {
+        const baseDue = order.deliveryDate ?? soldAt
+        const nextDue = advanceDueDate(baseDue, order.recurringInterval)
+        const nextOrder = await FarmOrder.create(
+          {
+            workspaceId,
+            customerName: order.customerName,
+            contact: order.contact,
+            status: 'pending',
+            createdBy: userId,
+            approvedBy: null,
+            orderDate: soldAt,
+            deliveryDate: nextDue,
+            recurringInterval: order.recurringInterval,
+            soldAt: null,
+            clientEntryId: null,
+          },
+          { client: trx },
+        )
+
+        await OrderItem.createMany(
+          items.map((item) => ({
+            orderId: nextOrder.id,
+            size: item.size,
+            crates: item.crates,
+          })),
+          { client: trx },
+        )
+
+        await activityLogService.log({
+          workspaceId,
+          userId,
+          action: 'order.create',
+          entity: 'order',
+          entityId: nextOrder.id,
+          before: null,
+          after: {
+            status: 'pending',
+            customerName: nextOrder.customerName,
+            items,
+            deliveryDate: nextDue.toISO(),
+            recurringInterval: order.recurringInterval,
+            spawnedFrom: order.id,
+          },
+          quantity: items.reduce((sum, i) => sum + i.crates, 0),
+          recordedAt: soldAt,
+          note: `Recurring ${order.recurringInterval} order from ${order.id}`,
+          trx,
+        })
+      }
 
       await trx.commit()
       await FarmCacheService.invalidateAfterOrderChange(workspaceId)

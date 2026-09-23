@@ -3,7 +3,7 @@ import type { FarmOrderStatus } from '#models/farm_order'
 import farmOrderService from '#services/farm_order_service'
 import { isFarmContext, requireFarmContext } from '#utils/farm_context'
 import { canApproveOrders } from '#utils/farm_permissions'
-import { createOrderValidator, orderListFilterValidator } from '#validators/farm'
+import { createOrderValidator, orderListFilterValidator, updateOrderValidator } from '#validators/farm'
 
 export default class FarmOrdersController {
   async index(ctx: HttpContext) {
@@ -68,6 +68,7 @@ export default class FarmOrdersController {
           items: payload.items,
           orderDate: payload.orderDate,
           deliveryDate: payload.deliveryDate,
+          recurringInterval: payload.recurringInterval ?? null,
           clientEntryId: payload.clientEntryId,
         },
         farm.farmRole,
@@ -81,6 +82,38 @@ export default class FarmOrdersController {
       const err = error as { message?: string; status?: number }
       return ctx.response.status(err.status ?? 400).json({
         error: err.message || 'Unable to create order.',
+      })
+    }
+  }
+
+  async update(ctx: HttpContext) {
+    const farm = await requireFarmContext(ctx)
+    if (!isFarmContext(farm)) return farm.errorResponse
+
+    const payload = await ctx.request.validateUsing(updateOrderValidator)
+
+    try {
+      const order = await farmOrderService.update(
+        farm.workspaceId,
+        farm.user.id,
+        ctx.request.param('id'),
+        {
+          customerName: payload.customerName,
+          contact: payload.contact,
+          deliveryDate: payload.deliveryDate,
+          recurringInterval: payload.recurringInterval ?? null,
+          items: payload.items,
+        },
+      )
+
+      return ctx.response.ok({
+        message: 'Order updated.',
+        data: { order: order.serialize() },
+      })
+    } catch (error: unknown) {
+      const err = error as { message?: string; status?: number }
+      return ctx.response.status(err.status ?? 400).json({
+        error: err.message || 'Unable to update order.',
       })
     }
   }

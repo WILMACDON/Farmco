@@ -3,35 +3,23 @@ import { Head, router, usePage } from '@inertiajs/react'
 import { DashboardLayout } from '@/components/dashboard/layout'
 import { PageHeader } from '@/components/dashboard/page_header'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { DeveloperTab } from './developer-tab'
 import { NotificationsTab } from './notifications-tab'
 import { PasswordTab } from './password-tab'
 import { ProfileTab } from './profile-tab'
 import { SessionsTab } from './sessions-tab'
 import { WorkspaceTab } from './workspace-tab'
 
-const validTabs = [
-  'profile',
-  'password',
-  'notifications',
-  'sessions',
-  'workspace',
-  'developer',
-] as const
+const validTabs = ['profile', 'password', 'notifications', 'sessions', 'workspace'] as const
 type TabValue = (typeof validTabs)[number]
 
-interface SettingsProps extends SharedProps {
-  tokens?: any[]
-}
-
-export default function Settings({ tokens = [] }: SettingsProps) {
+export default function Settings(_props: SharedProps) {
   const page = usePage()
   const qs = (page.props.qs as { tab?: string }) || {}
   const currentTab = (
     qs.tab && validTabs.includes(qs.tab as TabValue) ? qs.tab : 'profile'
   ) as TabValue
 
-  const handleTabChange = (value: string) => {
+  function handleTabChange(value: string) {
     if (validTabs.includes(value as TabValue)) {
       router.get(
         '/settings',
@@ -58,7 +46,6 @@ export default function Settings({ tokens = [] }: SettingsProps) {
             <TabsTrigger value='notifications'>Notifications</TabsTrigger>
             <TabsTrigger value='sessions'>Sessions</TabsTrigger>
             <TabsTrigger value='workspace'>Workspace</TabsTrigger>
-            <TabsTrigger value='developer'>Developer</TabsTrigger>
           </TabsList>
 
           <TabsContent value='profile' className='space-y-6'>
@@ -79,10 +66,6 @@ export default function Settings({ tokens = [] }: SettingsProps) {
 
           <TabsContent value='workspace'>
             <WorkspaceTab />
-          </TabsContent>
-
-          <TabsContent value='developer'>
-            <DeveloperTab tokens={tokens} />
           </TabsContent>
         </Tabs>
       </div>

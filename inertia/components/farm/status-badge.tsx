@@ -5,7 +5,7 @@ export type StatusTone = 'good' | 'attention' | 'danger' | 'info' | 'neutral'
 const toneClasses: Record<StatusTone, string> = {
   good: 'bg-secondary text-primary',
   attention:
-    'bg-[color-mix(in_oklab,var(--accent)_22%,transparent)] text-[color-mix(in_oklab,var(--accent-foreground)_85%,var(--foreground))]',
+    'bg-[color-mix(in_oklab,var(--accent)_22%,transparent)] text-accent-foreground dark:bg-accent/20 dark:text-accent',
   danger: 'bg-[color-mix(in_oklab,var(--destructive)_16%,transparent)] text-destructive',
   info: 'bg-[color-mix(in_oklab,var(--info)_18%,transparent)] text-[var(--info)]',
   neutral: 'bg-muted text-muted-foreground',

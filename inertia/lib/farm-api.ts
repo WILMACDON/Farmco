@@ -121,6 +121,17 @@ export function formatDateTime(value: string | null | undefined) {
   })
 }
 
+export function formatDate(value: string | null | undefined) {
+  if (!value) return '—'
+  const date = new Date(value.length <= 10 ? `${value}T12:00:00` : value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
 export function formatNumber(value: number | null | undefined, digits = 0) {
   if (value == null || Number.isNaN(value)) return '—'
   return value.toLocaleString(undefined, {

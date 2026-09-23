@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react'
-import { Plus, Trash2 } from 'lucide-react'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { DashboardLayout } from '@/components/dashboard/layout'
 import { PageHeader } from '@/components/dashboard/page_header'
@@ -7,6 +7,7 @@ import { StatusBadge } from '@/components/farm/status-badge'
 import { SyncIndicator } from '@/components/farm/sync-indicator'
 import { AppCard } from '@/components/ui/app-card'
 import { Button } from '@/components/ui/button'
+import { DatePicker } from '@/components/ui/date-picker'
 import {
   Dialog,
   DialogContent,
@@ -24,10 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { farmMutate, formatDateTime, formatEggSize, formatNumber } from '@/lib/farm-api'
+import { farmMutate, formatDate, formatDateTime, formatEggSize, formatNumber } from '@/lib/farm-api'
 
 type OrderStatus = 'pending' | 'approved' | 'sold' | 'cancelled'
 type EggSize = 'small' | 'medium' | 'large'
+type RecurringInterval = 'weekly' | 'biweekly' | 'monthly'
 
 interface OrderItem {
   id?: string
@@ -42,6 +44,7 @@ interface FarmOrder {
   status: OrderStatus
   orderDate: string
   deliveryDate: string | null
+  recurringInterval: RecurringInterval | null
   soldAt: string | null
   items?: OrderItem[]
   creator?: { fullName?: string | null; email?: string | null } | null
@@ -75,6 +78,24 @@ interface DraftItem {
   crates: string
 }
 
+const emptyDraft: DraftItem[] = [{ size: 'large', crates: '1' }]
+
+const recurringLabels: Record<RecurringInterval, string> = {
+  weekly: 'Weekly',
+  biweekly: 'Every 2 weeks',
+  monthly: 'Monthly',
+}
+
+function canEditOrder(status: OrderStatus) {
+  return status === 'pending' || status === 'approved'
+}
+
+function toDateInputValue(value: string | null | undefined) {
+  if (!value) return ''
+  if (value.length >= 10) return value.slice(0, 10)
+  return value
+}
+
 export default function OrdersPage({
   orders,
   meta,
@@ -84,10 +105,13 @@ export default function OrdersPage({
 }: OrdersPageProps) {
   const [search, setSearch] = useState(filters.search || filters.customer || '')
   const [status, setStatus] = useState<string>(filters.status || 'all')
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [editingOrder, setEditingOrder] = useState<FarmOrder | null>(null)
   const [customerName, setCustomerName] = useState('')
   const [contact, setContact] = useState('')
-  const [items, setItems] = useState<DraftItem[]>([{ size: 'large', crates: '1' }])
+  const [dueDate, setDueDate] = useState('')
+  const [recurring, setRecurring] = useState<string>('none')
+  const [items, setItems] = useState<DraftItem[]>(emptyDraft)
   const [isSaving, setIsSaving] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
 
@@ -101,7 +125,41 @@ export default function OrdersPage({
     router.get('/orders', params, { preserveState: true, replace: true })
   }
 
-  async function handleCreate(e: React.FormEvent) {
+  function openCreate() {
+    setEditingOrder(null)
+    setCustomerName('')
+    setContact('')
+    setDueDate('')
+    setRecurring('none')
+    setItems(emptyDraft)
+    setIsFormOpen(true)
+  }
+
+  function openEdit(order: FarmOrder) {
+    setEditingOrder(order)
+    setCustomerName(order.customerName)
+    setContact(order.contact || '')
+    setDueDate(toDateInputValue(order.deliveryDate))
+    setRecurring(order.recurringInterval || 'none')
+    setItems(
+      (order.items ?? []).length > 0
+        ? (order.items ?? []).map((item) => ({ size: item.size, crates: String(item.crates) }))
+        : emptyDraft,
+    )
+    setIsFormOpen(true)
+  }
+
+  function closeForm() {
+    setIsFormOpen(false)
+    setEditingOrder(null)
+    setCustomerName('')
+    setContact('')
+    setDueDate('')
+    setRecurring('none')
+    setItems(emptyDraft)
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const parsedItems = items
       .map((item) => ({ size: item.size, crates: Number(item.crates) }))
@@ -109,24 +167,32 @@ export default function OrdersPage({
     if (!customerName.trim() || parsedItems.length === 0) return
 
     setIsSaving(true)
-    const ok = await farmMutate({
-      path: '/farm/orders',
-      data: {
-        customerName: customerName.trim(),
-        contact: contact.trim() || null,
-        items: parsedItems,
-      },
-      offlineType: 'orders',
-      successMessage: 'Order created.',
-      errorFallback: 'Unable to create order.',
-    })
-    setIsSaving(false)
-    if (ok) {
-      setIsCreateOpen(false)
-      setCustomerName('')
-      setContact('')
-      setItems([{ size: 'large', crates: '1' }])
+    const payload = {
+      customerName: customerName.trim(),
+      contact: contact.trim() || null,
+      deliveryDate: dueDate.trim() || null,
+      recurringInterval: recurring === 'none' ? null : (recurring as RecurringInterval),
+      items: parsedItems,
     }
+
+    const ok = editingOrder
+      ? await farmMutate({
+          path: `/farm/orders/${editingOrder.id}`,
+          method: 'put',
+          data: payload,
+          successMessage: 'Order updated.',
+          errorFallback: 'Unable to update order.',
+        })
+      : await farmMutate({
+          path: '/farm/orders',
+          data: payload,
+          offlineType: 'orders',
+          successMessage: 'Order created.',
+          errorFallback: 'Unable to create order.',
+        })
+
+    setIsSaving(false)
+    if (ok) closeForm()
   }
 
   async function runOrderAction(orderId: string, action: 'approve' | 'cancel' | 'sold') {
@@ -163,7 +229,7 @@ export default function OrdersPage({
                 size='lg'
                 className='min-h-11'
                 leftIcon={<Plus className='h-4 w-4' />}
-                onClick={() => setIsCreateOpen(true)}>
+                onClick={openCreate}>
                 New order
               </Button>
             </div>
@@ -218,20 +284,27 @@ export default function OrdersPage({
             <div className='space-y-4'>
               {orders.map((order) => {
                 const crates = (order.items ?? []).reduce((sum, i) => sum + i.crates, 0)
+                const editable = canEditOrder(order.status)
                 return (
-                  <div
-                    key={order.id}
-                    className='rounded-[var(--radius-card)] border border-border p-4'>
+                  <div key={order.id} className='rounded-card border border-border p-4'>
                     <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
                       <div className='space-y-1'>
                         <div className='flex flex-wrap items-center gap-2'>
                           <p className='font-medium'>{order.customerName}</p>
                           <StatusBadge status={order.status} />
+                          {order.recurringInterval && (
+                            <StatusBadge
+                              status={order.recurringInterval}
+                              label={recurringLabels[order.recurringInterval]}
+                              tone='info'
+                            />
+                          )}
                         </div>
                         <p className='text-sm text-muted-foreground'>
                           {formatDateTime(order.orderDate)}
                           {order.contact ? ` · ${order.contact}` : ''}
                           {` · ${formatNumber(crates)} crates`}
+                          {order.deliveryDate ? ` · Due ${formatDate(order.deliveryDate)}` : ''}
                         </p>
                         <p className='text-sm'>
                           {(order.items ?? [])
@@ -239,44 +312,52 @@ export default function OrdersPage({
                             .join(' · ') || 'No items'}
                         </p>
                       </div>
-                      {canApprove && (
-                        <div className='flex flex-wrap gap-2'>
-                          {order.status === 'pending' && (
-                            <>
-                              <Button
-                                className='min-h-11'
-                                isLoading={busyId === order.id}
-                                onClick={() => runOrderAction(order.id, 'approve')}>
-                                Approve
-                              </Button>
-                              <Button
-                                variant='outline'
-                                className='min-h-11'
-                                disabled={busyId === order.id}
-                                onClick={() => runOrderAction(order.id, 'cancel')}>
-                                Cancel
-                              </Button>
-                            </>
-                          )}
-                          {order.status === 'approved' && (
-                            <>
-                              <Button
-                                className='min-h-11 bg-accent text-accent-foreground hover:bg-accent/90'
-                                isLoading={busyId === order.id}
-                                onClick={() => runOrderAction(order.id, 'sold')}>
-                                Mark sold
-                              </Button>
-                              <Button
-                                variant='outline'
-                                className='min-h-11'
-                                disabled={busyId === order.id}
-                                onClick={() => runOrderAction(order.id, 'cancel')}>
-                                Cancel
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      )}
+                      <div className='flex flex-wrap gap-2'>
+                        {editable && (
+                          <Button
+                            variant='outline'
+                            className='min-h-11'
+                            leftIcon={<Pencil className='h-4 w-4' />}
+                            disabled={busyId === order.id}
+                            onClick={() => openEdit(order)}>
+                            Edit
+                          </Button>
+                        )}
+                        {canApprove && order.status === 'pending' && (
+                          <>
+                            <Button
+                              className='min-h-11'
+                              isLoading={busyId === order.id}
+                              onClick={() => runOrderAction(order.id, 'approve')}>
+                              Approve
+                            </Button>
+                            <Button
+                              variant='outline'
+                              className='min-h-11'
+                              disabled={busyId === order.id}
+                              onClick={() => runOrderAction(order.id, 'cancel')}>
+                              Cancel
+                            </Button>
+                          </>
+                        )}
+                        {canApprove && order.status === 'approved' && (
+                          <>
+                            <Button
+                              className='min-h-11 bg-accent text-accent-foreground hover:bg-accent/90'
+                              isLoading={busyId === order.id}
+                              onClick={() => runOrderAction(order.id, 'sold')}>
+                              Mark sold
+                            </Button>
+                            <Button
+                              variant='outline'
+                              className='min-h-11'
+                              disabled={busyId === order.id}
+                              onClick={() => runOrderAction(order.id, 'cancel')}>
+                              Cancel
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )
@@ -308,13 +389,22 @@ export default function OrdersPage({
         </AppCard>
       </div>
 
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+      <Dialog
+        open={isFormOpen}
+        onOpenChange={(open) => {
+          if (!open) closeForm()
+          else setIsFormOpen(true)
+        }}>
         <DialogContent className='max-w-lg'>
           <DialogHeader>
-            <DialogTitle>New order</DialogTitle>
-            <DialogDescription>Create a pending egg order for a customer.</DialogDescription>
+            <DialogTitle>{editingOrder ? 'Edit order' : 'New order'}</DialogTitle>
+            <DialogDescription>
+              {editingOrder
+                ? 'Update customer details, due date, or egg sizes before the order is sold.'
+                : 'Create a pending egg order. Add an optional due date or make it recurring.'}
+            </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleCreate} className='space-y-4'>
+          <form onSubmit={handleSubmit} className='space-y-4'>
             <FormField label='Customer name' required>
               <Input
                 className='min-h-11'
@@ -331,6 +421,30 @@ export default function OrdersPage({
                 placeholder='Phone or note'
               />
             </FormField>
+            <div className='grid gap-4 sm:grid-cols-2'>
+              <FormField label='Due date'>
+                <DatePicker
+                  value={dueDate || null}
+                  onChange={(value) => setDueDate(value)}
+                  clearable
+                  placeholder='Optional'
+                  buttonClassName='min-h-11'
+                />
+              </FormField>
+              <FormField label='Recurring'>
+                <Select value={recurring} onValueChange={(v) => setRecurring(v || 'none')}>
+                  <SelectTrigger className='min-h-11 w-full h-auto'>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='none'>Does not repeat</SelectItem>
+                    <SelectItem value='weekly'>Weekly</SelectItem>
+                    <SelectItem value='biweekly'>Every 2 weeks</SelectItem>
+                    <SelectItem value='monthly'>Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+            </div>
             <div className='space-y-3'>
               <p className='text-sm font-medium'>Items</p>
               {items.map((item, index) => (
@@ -390,15 +504,11 @@ export default function OrdersPage({
               </Button>
             </div>
             <DialogFooter>
-              <Button
-                type='button'
-                variant='outline'
-                className='min-h-11'
-                onClick={() => setIsCreateOpen(false)}>
+              <Button type='button' variant='outline' className='min-h-11' onClick={closeForm}>
                 Cancel
               </Button>
               <Button type='submit' className='min-h-11' isLoading={isSaving}>
-                Create order
+                {editingOrder ? 'Save changes' : 'Create order'}
               </Button>
             </DialogFooter>
           </form>
