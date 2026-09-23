@@ -5,6 +5,7 @@ const email = vine.string().toLowerCase().trim().email()
 export const createUserValidator = vine.compile(
   vine.object({
     fullName: vine.string().maxLength(255),
+    organizationName: vine.string().trim().minLength(2).maxLength(255),
     email,
     password: vine.string(),
     confirmPassword: vine.string().confirmed({ confirmationField: 'confirmPassword' }),

@@ -17,6 +17,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   APP_KEY: Env.schema.string(),
   HOST: Env.schema.string({ format: 'host' }),
   LOG_LEVEL: Env.schema.string(),
+  APP_NAME: Env.schema.string.optional(),
 
   /*
   |----------------------------------------------------------
@@ -58,6 +59,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   */
   GOOGLE_CLIENT_ID: Env.schema.string.optional(),
   GOOGLE_CLIENT_SECRET: Env.schema.string.optional(),
+  GOOGLE_CALLBACK_URL: Env.schema.string.optional(),
 
   /*
   |----------------------------------------------------------
@@ -69,6 +71,16 @@ export default await Env.create(new URL('../', import.meta.url), {
   DB_USER: Env.schema.string(),
   DB_PASSWORD: Env.schema.string.optional(),
   DB_DATABASE: Env.schema.string(),
+
+  /*
+  |----------------------------------------------------------
+  | Redis / cache
+  |----------------------------------------------------------
+  */
+  REDIS_HOST: Env.schema.string.optional({ format: 'host' }),
+  REDIS_PORT: Env.schema.number.optional(),
+  REDIS_PASSWORD: Env.schema.string.optional(),
+  CACHE_STORE: Env.schema.enum.optional(['default', 'memoryOnly'] as const),
 
   /*
   |----------------------------------------------------------

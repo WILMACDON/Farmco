@@ -17,10 +17,11 @@ export default class WorkspaceOnboardingMiddleware {
     }
 
     const url = ctx.request.url()
+    const isFarmApi = url.startsWith('/api/v1/farm')
 
-    // Don't intercept API calls, the onboarding page itself, or logout
+    // Don't intercept non-farm API calls, the onboarding page itself, or logout
     if (
-      url.startsWith('/api/') ||
+      (url.startsWith('/api/') && !isFarmApi) ||
       url.startsWith('/onboarding') ||
       url.startsWith('/logout') ||
       url.startsWith('/join')
@@ -30,6 +31,11 @@ export default class WorkspaceOnboardingMiddleware {
 
     const hasWorkspace = await workspaceService.userHasWorkspace(user.id)
     if (!hasWorkspace) {
+      if (isFarmApi) {
+        return ctx.response.forbidden({
+          error: 'Create or join a workspace before using farm features.',
+        })
+      }
       return ctx.response.redirect('/onboarding')
     }
 

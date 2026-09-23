@@ -8,14 +8,12 @@ const labelVariants = cva(
 
 interface LabelProps
   extends React.LabelHTMLAttributes<HTMLLabelElement>,
-  VariantProps<typeof labelVariants> { }
+    VariantProps<typeof labelVariants> {}
 
-const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
-  ({ className, ...props }, ref) => (
-    // biome-ignore lint/a11y/noLabelWithoutControl: we use this for form fields
-    <label ref={ref} className={cn(labelVariants(), className)} {...props} />
-  ),
-)
+const Label = React.forwardRef<HTMLLabelElement, LabelProps>(({ className, ...props }, ref) => (
+  // biome-ignore lint/a11y/noLabelWithoutControl: we use this for form fields
+  <label ref={ref} className={cn(labelVariants(), className)} {...props} />
+))
 Label.displayName = 'Label'
 
 export { Label }

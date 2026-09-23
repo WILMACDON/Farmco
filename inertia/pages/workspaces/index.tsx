@@ -1,3 +1,8 @@
+import { Head, usePage } from '@inertiajs/react'
+import { useQuery } from '@tanstack/react-query'
+import { Building2, Crown, Mail, Shield, UserPlus, Users } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import type { RawUser, RawWorkspace } from '#types/model-types'
 import type { Column } from '@/components/dashboard/data-table'
 import { DataTable } from '@/components/dashboard/data-table'
@@ -22,11 +27,6 @@ import { StatCard } from '@/components/ui/stat-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { type ServerErrorResponse, serverErrorResponder } from '@/lib/error'
 import api from '@/lib/http'
-import { Head, usePage } from '@inertiajs/react'
-import { useQuery } from '@tanstack/react-query'
-import { Building2, Crown, Mail, Shield, UserPlus, Users } from 'lucide-react'
-import { useState } from 'react'
-import { toast } from 'sonner'
 
 interface MemberRow {
   id: string
@@ -82,9 +82,7 @@ const memberColumns: Column<MemberRow>[] = [
     key: 'createdAt',
     header: 'Joined',
     cell: (row) => (
-      <div className='text-muted-foreground'>
-        {new Date(row.createdAt).toLocaleDateString()}
-      </div>
+      <div className='text-muted-foreground'>{new Date(row.createdAt).toLocaleDateString()}</div>
     ),
   },
 ]
@@ -118,9 +116,7 @@ const invitationColumns: Column<InvitationRow>[] = [
     key: 'createdAt',
     header: 'Sent',
     cell: (row) => (
-      <div className='text-muted-foreground'>
-        {new Date(row.createdAt).toLocaleDateString()}
-      </div>
+      <div className='text-muted-foreground'>{new Date(row.createdAt).toLocaleDateString()}</div>
     ),
   },
 ]
@@ -207,16 +203,8 @@ export default function WorkspacesIndex() {
         />
 
         <SimpleGrid cols={{ base: 1, sm: 3 }} spacing={4}>
-          <StatCard
-            title='Members'
-            value={membersQuery.data?.meta.total ?? '—'}
-            icon={Users}
-          />
-          <StatCard
-            title='Pending invites'
-            value={invitations.length}
-            icon={Mail}
-          />
+          <StatCard title='Members' value={membersQuery.data?.meta.total ?? '—'} icon={Users} />
+          <StatCard title='Pending invites' value={invitations.length} icon={Mail} />
           <StatCard
             title='Your role'
             value={
@@ -243,7 +231,9 @@ export default function WorkspacesIndex() {
           </TabsList>
 
           <TabsContent value='members' className='space-y-4'>
-            <AppCard title='Team members' description={`${members.length} member${members.length !== 1 ? 's' : ''}`}>
+            <AppCard
+              title='Team members'
+              description={`${members.length} member${members.length !== 1 ? 's' : ''}`}>
               <DataTable
                 columns={memberColumns}
                 data={members}

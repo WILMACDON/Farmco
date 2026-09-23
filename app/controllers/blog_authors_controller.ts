@@ -25,4 +25,3 @@ export default class BlogAuthorsController {
     return response.redirect('/blog/admin/authors')
   }
 }
-

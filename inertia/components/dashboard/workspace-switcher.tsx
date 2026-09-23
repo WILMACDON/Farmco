@@ -68,7 +68,32 @@ export function WorkspaceSwitcher({ collapsed = false }: WorkspaceSwitcherProps)
     }
   }
 
-  const initial = currentWorkspace?.name?.charAt(0)?.toUpperCase() ?? 'W'
+  const initial = currentWorkspace?.name?.charAt(0)?.toUpperCase() ?? 'F'
+  const hasMultipleWorkspaces = workspaces.length > 1
+
+  // Single-farm: show org name only (no switcher / create)
+  if (!hasMultipleWorkspaces) {
+    if (collapsed) {
+      return (
+        <div
+          title={currentWorkspace?.name ?? 'Farm'}
+          className='mx-auto flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-sm font-semibold text-primary'>
+          {initial}
+        </div>
+      )
+    }
+
+    return (
+      <div className='flex w-full items-center gap-2 rounded-md px-2 py-2'>
+        <div className='flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary'>
+          <Building2 className='h-4 w-4' />
+        </div>
+        <p className='truncate text-[13px] font-medium leading-4'>
+          {currentWorkspace?.name ?? 'Your farm'}
+        </p>
+      </div>
+    )
+  }
 
   if (collapsed) {
     return (

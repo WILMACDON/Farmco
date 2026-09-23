@@ -64,6 +64,9 @@ export default defineConfig({
     () => import('@adonisjs/drive/drive_provider'),
     () => import('@jrmc/adonis-attachment/attachment_provider'),
     () => import('@adonisjs/cache/cache_provider'),
+    ...(process.env.NODE_ENV !== 'test' && process.env.CACHE_STORE !== 'memoryOnly'
+      ? [() => import('@adonisjs/redis/redis_provider')]
+      : []),
     () => import('@adonisjs/limiter/limiter_provider'),
     () => import('@adonisjs/ally/ally_provider'),
     () => import('@stouder-io/adonis-auditing/auditing_provider'),

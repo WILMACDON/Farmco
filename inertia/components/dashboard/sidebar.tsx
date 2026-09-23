@@ -1,24 +1,28 @@
 import { Link, router, usePage } from '@inertiajs/react'
 import {
+  BarChart3,
+  Bird,
   ChevronsUpDown,
-  CreditCard,
+  Egg,
   LayoutDashboard,
   LogOut,
-  Newspaper,
+  Package,
   PanelLeft,
   PanelRight,
+  ScrollText,
   Settings,
   ShieldCheck,
   Sun,
   Users,
-  UsersRound,
+  Wheat,
 } from 'lucide-react'
 import { createContext, type ReactNode, useContext, useEffect, useState } from 'react'
 import type { RawUser } from '#types/model-types'
 import { AppLogo } from '@/components/app_logo'
-import { BillingBanner, type BillingAlert } from '@/components/dashboard/billing-banner'
 import { CommandPalette } from '@/components/command-palette'
+import { MobileBottomNav } from '@/components/dashboard/mobile-bottom-nav'
 import { WorkspaceSwitcher } from '@/components/dashboard/workspace-switcher'
+import { SyncIndicator } from '@/components/farm/sync-indicator'
 import { NotificationCenter } from '@/components/notifications/notification-center'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -37,6 +41,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useOfflineQueue } from '@/hooks/use-offline-queue'
 import { useTheme } from '@/hooks/use-theme'
 import { cn } from '@/lib/utils'
 
@@ -57,11 +62,21 @@ const SIDEBAR_STORAGE_KEY = 'dashboard-sidebar-open'
 
 const userNavSections: NavSection[] = [
   {
-    label: 'Overview',
+    label: 'Farm',
     items: [
       { title: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className='h-4 w-4' /> },
-      { title: 'Workspaces', href: '/workspaces', icon: <UsersRound className='h-4 w-4' /> },
-      { title: 'Billing', href: '/billing', icon: <CreditCard className='h-4 w-4' /> },
+      { title: 'Birds', href: '/birds', icon: <Bird className='h-4 w-4' /> },
+      { title: 'Eggs', href: '/eggs', icon: <Egg className='h-4 w-4' /> },
+      { title: 'Feed', href: '/feed', icon: <Wheat className='h-4 w-4' /> },
+      { title: 'Orders', href: '/orders', icon: <Package className='h-4 w-4' /> },
+    ],
+  },
+  {
+    label: 'Manage',
+    items: [
+      { title: 'Statistics', href: '/stats', icon: <BarChart3 className='h-4 w-4' /> },
+      { title: 'Activity', href: '/activity', icon: <ScrollText className='h-4 w-4' /> },
+      { title: 'Users', href: '/users', icon: <Users className='h-4 w-4' /> },
       { title: 'Settings', href: '/settings', icon: <Settings className='h-4 w-4' /> },
     ],
   },
@@ -73,8 +88,6 @@ const adminNavSections: NavSection[] = [
     items: [
       { title: 'Dashboard', href: '/admin', icon: <ShieldCheck className='h-4 w-4' /> },
       { title: 'Users', href: '/admin/users', icon: <Users className='h-4 w-4' /> },
-      { title: 'Plans', href: '/admin/plans', icon: <CreditCard className='h-4 w-4' /> },
-      { title: 'Blog', href: '/admin/blog', icon: <Newspaper className='h-4 w-4' /> },
     ],
   },
 ]
@@ -85,7 +98,7 @@ const SidebarContext = createContext<{
   isMobile: boolean
   toggle: () => void
   closeMobile: () => void
-}>({ isOpen: true, isMobile: false, toggle: () => { }, closeMobile: () => { } })
+}>({ isOpen: true, isMobile: false, toggle: () => {}, closeMobile: () => {} })
 
 const useSidebar = () => useContext(SidebarContext)
 
@@ -121,7 +134,7 @@ function SidebarItem({ item }: { item: NavItem }) {
   if (!isOpen && !isMobile) {
     return (
       <Tooltip>
-        <TooltipTrigger>{content}</TooltipTrigger>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
         <TooltipContent side='right'>{item.title}</TooltipContent>
       </Tooltip>
     )
@@ -133,6 +146,12 @@ function SidebarItem({ item }: { item: NavItem }) {
 function UserMenu({ user }: { user: RawUser }) {
   const { isOpen, isMobile } = useSidebar()
   const { theme, setTheme } = useTheme()
+  const { confirmLogout } = useOfflineQueue()
+
+  async function handleSignOut() {
+    const ok = await confirmLogout()
+    if (ok) router.visit('/logout')
+  }
 
   return (
     <DropdownMenu>
@@ -181,7 +200,7 @@ function UserMenu({ user }: { user: RawUser }) {
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.visit('/logout')}>
+        <DropdownMenuItem onClick={() => void handleSignOut()}>
           <LogOut className='mr-2 h-4 w-4' />
           Sign out
         </DropdownMenuItem>
@@ -234,7 +253,8 @@ function SidebarContent({ sections, isAdmin }: { sections: NavSection[]; isAdmin
       </ScrollArea>
 
       {/* Footer */}
-      <div className='border-t border-sidebar-border p-2'>
+      <div className='space-y-2 border-t border-sidebar-border p-2'>
+        {(isOpen || isMobile) && <SyncIndicator className='w-full justify-start' />}
         <UserMenu user={user} />
       </div>
     </div>
@@ -247,7 +267,6 @@ export function Sidebar({ children }: { children: ReactNode }) {
   const isAdmin = user?.role === 'admin'
   const adminPageAccess = (page.props as { adminPageAccess?: string[] }).adminPageAccess
   const impersonating = (page.props as { impersonating?: boolean }).impersonating
-  const billingAlert = (page.props as { billingAlert?: BillingAlert | null }).billingAlert ?? null
 
   // Sidebar State
   const [isOpen, setIsOpen] = useState(() => {
@@ -275,24 +294,35 @@ export function Sidebar({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  // Close mobile sheet (and any leftover portal overlays) on Inertia navigation
+  useEffect(() => {
+    return router.on('before', () => {
+      setIsSheetOpen(false)
+    })
+  }, [])
+
+  const farmRole = (page.props as { farmRole?: 'owner' | 'manager' | 'worker' | null }).farmRole
+  const canManageUsers = farmRole === 'owner' || farmRole === 'manager'
+
   // Filter Nav Items
   const sections = isAdmin
     ? adminNavSections.map((s) => ({
-      ...s,
-      items: s.items.filter((item) => {
-        if (!adminPageAccess) return true
-        // ... simplified logic for example brevity, keep original if complex logic needed
-        const key = item.href.includes('users')
-          ? 'admin_users'
-          : item.href.includes('blog')
-            ? 'admin_blog'
-            : item.href.includes('plans')
-              ? 'admin_plans'
-              : 'admin_dashboard'
-        return adminPageAccess.includes(key)
-      }),
-    }))
+        ...s,
+        items: s.items.filter((item) => {
+          if (!adminPageAccess) return true
+          const key = item.href.includes('users') ? 'admin_users' : 'admin_dashboard'
+          return adminPageAccess.includes(key)
+        }),
+      }))
     : userNavSections
+        .map((s) => ({
+          ...s,
+          items: s.items.filter((item) => {
+            if (item.href === '/users') return canManageUsers
+            return true
+          }),
+        }))
+        .filter((s) => s.items.length > 0)
 
   return (
     <SidebarContext.Provider
@@ -307,14 +337,14 @@ export function Sidebar({ children }: { children: ReactNode }) {
         {!isMobile && (
           <aside
             className={cn(
-              'border-r border-sidebar-border transition-all duration-300 ease-in-out',
+              'hidden border-r border-sidebar-border transition-all duration-300 ease-in-out md:block',
               isOpen ? 'w-64' : 'w-[70px]',
             )}>
             <SidebarContent sections={sections} isAdmin={isAdmin} />
           </aside>
         )}
 
-        {/* Mobile Sidebar */}
+        {/* Mobile Sidebar sheet for Stats / Users / Activity */}
         {isMobile && (
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetContent side='left' className='w-64 p-0 border-r-0'>
@@ -326,7 +356,7 @@ export function Sidebar({ children }: { children: ReactNode }) {
         {/* Main Content */}
         <main className='flex flex-1 flex-col overflow-hidden'>
           {impersonating && (
-            <div className='bg-red-600 px-4 py-2 text-center text-sm font-medium text-white'>
+            <div className='bg-destructive px-4 py-2 text-center text-sm font-medium text-destructive-foreground'>
               You are impersonating {user.fullName}.{' '}
               <Link href='/logout/impersonation' method='post' as='button' className='underline'>
                 Stop
@@ -334,17 +364,12 @@ export function Sidebar({ children }: { children: ReactNode }) {
             </div>
           )}
 
-          {billingAlert && (
-            <div className='px-6 py-3'>
-              <BillingBanner alert={billingAlert} />
-            </div>
-          )}
-
-          <header className='flex h-14 items-center gap-4 border-b border-border bg-background px-6'>
+          <header className='flex h-14 items-center gap-4 border-b border-border bg-background px-4 md:px-6'>
             <Button
               variant='ghost'
               size='icon'
-              className='-ml-2 h-8 w-8'
+              className='-ml-2 h-11 w-11'
+              aria-label={isMobile ? 'Open menu' : 'Toggle sidebar'}
               onClick={() => (isMobile ? setIsSheetOpen(true) : setIsOpen((p: boolean) => !p))}>
               {isOpen || isMobile ? (
                 <PanelLeft className='h-4 w-4' />
@@ -360,8 +385,10 @@ export function Sidebar({ children }: { children: ReactNode }) {
           <CommandPalette />
 
           <ScrollArea className='flex-1'>
-            <div className='container mx-auto p-6 max-w-7xl'>{children}</div>
+            <div className='container mx-auto max-w-7xl p-4 pb-24 md:p-6 md:pb-6'>{children}</div>
           </ScrollArea>
+
+          {!isAdmin && <MobileBottomNav />}
         </main>
       </div>
     </SidebarContext.Provider>

@@ -35,4 +35,3 @@ export function BlogHeaderActions({ showBlogLink = false }: BlogHeaderActionsPro
     </>
   )
 }
-

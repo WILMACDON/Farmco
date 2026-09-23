@@ -6,4 +6,3 @@ export const updateAdminUserValidator = vine.compile(
     role: vine.enum(['admin', 'normal_user'] as const),
   }),
 )
-

@@ -1,4 +1,3 @@
-
 import { Head, Link } from '@inertiajs/react'
 import { ArrowLeft, Calendar, Clock } from 'lucide-react'
 import type { RawBlogPost } from '#types/model-types'
@@ -48,7 +47,9 @@ export default function BlogShow({ post }: BlogShowProps) {
 
               <div className='space-y-3'>
                 <div className='flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground'>
-                  {post.category?.name ? <Badge variant='secondary'>{post.category.name}</Badge> : null}
+                  {post.category?.name ? (
+                    <Badge variant='secondary'>{post.category.name}</Badge>
+                  ) : null}
                   {authorsLabel ? (
                     <span className='inline-flex items-center gap-1'>
                       <span className='text-muted-foreground'>By</span>
@@ -70,11 +71,14 @@ export default function BlogShow({ post }: BlogShowProps) {
                 </div>
 
                 <h1 className='text-4xl sm:text-5xl font-bold tracking-tight'>{post.title}</h1>
-                {post.summary ? <p className='text-muted-foreground text-base sm:text-lg max-w-3xl'>{post.summary}</p> : null}
+                {post.summary ? (
+                  <p className='text-muted-foreground text-base sm:text-lg max-w-3xl'>
+                    {post.summary}
+                  </p>
+                ) : null}
               </div>
 
-
-              <div >
+              <div>
                 {post.content ? (
                   <div className='space-y-5 text-base leading-7'>
                     {paragraphs.map((p) => (
@@ -128,7 +132,11 @@ function splitParagraphsWithKeys(text: string) {
 
 function formatDate(value: string) {
   try {
-    return new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    return new Date(value).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
   } catch {
     return value
   }
@@ -169,4 +177,3 @@ function hashString(value: string) {
   }
   return `p_${Math.abs(hash)}`
 }
-

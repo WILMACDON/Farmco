@@ -73,9 +73,6 @@ export function Combobox({
     return options.filter((option) => option.label.toLowerCase().includes(searchLower))
   }, [options, search])
 
-  // If we're inside a Sheet/Dialog, portal the popover into it so clicks work.
-  const portalContainer = triggerRef.current?.closest('[role="dialog"]') ?? null
-
   return (
     <Popover open={isOpen} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
@@ -90,7 +87,7 @@ export function Combobox({
           <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className='p-0' align='start' sideOffset={4} >
+      <PopoverContent className='p-0' align='start' sideOffset={4}>
         <Command shouldFilter={false}>
           <CommandInput placeholder={searchPlaceholder} value={search} onValueChange={setSearch} />
           <CommandList>

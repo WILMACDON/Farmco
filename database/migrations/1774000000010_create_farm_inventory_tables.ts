@@ -1,0 +1,156 @@
+import { BaseSchema } from '@adonisjs/lucid/schema'
+
+export default class extends BaseSchema {
+  async up() {
+    this.schema.createTable('bird_stocks', (table) => {
+      table.string('id').defaultTo(this.raw('nanoid()')).primary()
+      table.string('workspace_id').notNullable().references('id').inTable('workspaces').onDelete('CASCADE')
+      table.enum('health', ['well', 'sick']).nullable()
+      table.enum('production', ['laying', 'non_laying', 'chick']).notNullable()
+      /** Stable unique bucket e.g. well:laying or none:chick */
+      table.string('bucket_key').notNullable()
+      table.integer('count').notNullable().defaultTo(0)
+      table.timestamp('created_at')
+      table.timestamp('updated_at')
+      table.unique(['workspace_id', 'bucket_key'])
+    })
+
+    this.schema.createTable('bird_records', (table) => {
+      table.string('id').defaultTo(this.raw('nanoid()')).primary()
+      table.string('workspace_id').notNullable().references('id').inTable('workspaces').onDelete('CASCADE')
+      table.string('user_id').notNullable().references('id').inTable('users').onDelete('RESTRICT')
+      table.enum('direction', ['add', 'remove', 'move']).notNullable()
+      table.enum('health', ['well', 'sick']).nullable()
+      table.enum('production', ['laying', 'non_laying', 'chick']).notNullable()
+      table.enum('to_health', ['well', 'sick']).nullable()
+      table.enum('to_production', ['laying', 'non_laying', 'chick']).nullable()
+      table.integer('quantity').notNullable()
+      table.string('reason').nullable()
+      table.text('note').nullable()
+      table.string('client_entry_id').nullable()
+      table.boolean('needs_review').notNullable().defaultTo(false)
+      table.timestamp('recorded_at').notNullable()
+      table.timestamp('created_at')
+      table.timestamp('updated_at')
+      table.unique(['workspace_id', 'client_entry_id'])
+      table.index(['workspace_id', 'recorded_at'])
+    })
+
+    this.schema.createTable('egg_stocks', (table) => {
+      table.string('id').defaultTo(this.raw('nanoid()')).primary()
+      table.string('workspace_id').notNullable().references('id').inTable('workspaces').onDelete('CASCADE')
+      table.enum('size', ['small', 'medium', 'large']).notNullable()
+      table.integer('quantity_eggs').notNullable().defaultTo(0)
+      table.timestamp('created_at')
+      table.timestamp('updated_at')
+      table.unique(['workspace_id', 'size'])
+    })
+
+    this.schema.createTable('egg_records', (table) => {
+      table.string('id').defaultTo(this.raw('nanoid()')).primary()
+      table.string('workspace_id').notNullable().references('id').inTable('workspaces').onDelete('CASCADE')
+      table.string('user_id').notNullable().references('id').inTable('users').onDelete('RESTRICT')
+      table.enum('size', ['small', 'medium', 'large']).notNullable()
+      table.enum('direction', ['add', 'remove']).notNullable()
+      table.integer('quantity_eggs').notNullable()
+      table.string('reason').nullable()
+      table.text('note').nullable()
+      table.string('order_id').nullable()
+      table.string('client_entry_id').nullable()
+      table.boolean('needs_review').notNullable().defaultTo(false)
+      table.timestamp('recorded_at').notNullable()
+      table.timestamp('created_at')
+      table.timestamp('updated_at')
+      table.unique(['workspace_id', 'client_entry_id'])
+      table.index(['workspace_id', 'recorded_at'])
+    })
+
+    this.schema.createTable('feed_stocks', (table) => {
+      table.string('id').defaultTo(this.raw('nanoid()')).primary()
+      table.string('workspace_id').notNullable().references('id').inTable('workspaces').onDelete('CASCADE').unique()
+      table.decimal('bags', 12, 3).notNullable().defaultTo(0)
+      table.timestamp('created_at')
+      table.timestamp('updated_at')
+    })
+
+    this.schema.createTable('feed_records', (table) => {
+      table.string('id').defaultTo(this.raw('nanoid()')).primary()
+      table.string('workspace_id').notNullable().references('id').inTable('workspaces').onDelete('CASCADE')
+      table.string('user_id').notNullable().references('id').inTable('users').onDelete('RESTRICT')
+      table.enum('direction', ['add', 'remove']).notNullable()
+      table.decimal('bags', 12, 3).notNullable()
+      table.text('note').nullable()
+      table.string('client_entry_id').nullable()
+      table.boolean('needs_review').notNullable().defaultTo(false)
+      table.timestamp('recorded_at').notNullable()
+      table.timestamp('created_at')
+      table.timestamp('updated_at')
+      table.unique(['workspace_id', 'client_entry_id'])
+      table.index(['workspace_id', 'recorded_at'])
+    })
+
+    this.schema.createTable('activity_logs', (table) => {
+      table.string('id').defaultTo(this.raw('nanoid()')).primary()
+      table.string('workspace_id').notNullable().references('id').inTable('workspaces').onDelete('CASCADE')
+      table.string('user_id').notNullable().references('id').inTable('users').onDelete('RESTRICT')
+      table.string('action').notNullable()
+      table.string('entity').notNullable()
+      table.string('entity_id').nullable()
+      table.json('before').nullable()
+      table.json('after').nullable()
+      table.decimal('quantity', 12, 3).nullable()
+      table.text('note').nullable()
+      table.timestamp('recorded_at').notNullable()
+      table.timestamp('created_at')
+      table.timestamp('updated_at')
+      table.index(['workspace_id', 'recorded_at'])
+      table.index(['workspace_id', 'user_id'])
+    })
+
+    this.schema.createTable('orders', (table) => {
+      table.string('id').defaultTo(this.raw('nanoid()')).primary()
+      table.string('workspace_id').notNullable().references('id').inTable('workspaces').onDelete('CASCADE')
+      table.string('customer_name').notNullable()
+      table.string('contact').nullable()
+      table.enum('status', ['pending', 'approved', 'sold', 'cancelled']).notNullable().defaultTo('pending')
+      table.string('created_by').notNullable().references('id').inTable('users').onDelete('RESTRICT')
+      table.string('approved_by').nullable().references('id').inTable('users').onDelete('SET NULL')
+      table.timestamp('order_date').notNullable()
+      table.timestamp('delivery_date').nullable()
+      table.timestamp('sold_at').nullable()
+      table.string('client_entry_id').nullable()
+      table.timestamp('created_at')
+      table.timestamp('updated_at')
+      table.unique(['workspace_id', 'client_entry_id'])
+      table.index(['workspace_id', 'status'])
+    })
+
+    this.schema.createTable('order_items', (table) => {
+      table.string('id').defaultTo(this.raw('nanoid()')).primary()
+      table.string('order_id').notNullable().references('id').inTable('orders').onDelete('CASCADE')
+      table.enum('size', ['small', 'medium', 'large']).notNullable()
+      table.integer('crates').notNullable()
+      table.timestamp('created_at')
+      table.timestamp('updated_at')
+    })
+
+    this.schema.alterTable('egg_records', (table) => {
+      table.foreign('order_id').references('id').inTable('orders').onDelete('SET NULL')
+    })
+  }
+
+  async down() {
+    this.schema.alterTable('egg_records', (table) => {
+      table.dropForeign(['order_id'])
+    })
+    this.schema.dropTable('order_items')
+    this.schema.dropTable('orders')
+    this.schema.dropTable('activity_logs')
+    this.schema.dropTable('feed_records')
+    this.schema.dropTable('feed_stocks')
+    this.schema.dropTable('egg_records')
+    this.schema.dropTable('egg_stocks')
+    this.schema.dropTable('bird_records')
+    this.schema.dropTable('bird_stocks')
+  }
+}

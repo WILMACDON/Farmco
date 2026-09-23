@@ -38,6 +38,16 @@ const BillingController = () => import('#controllers/billings_controller')
 const StripeWebhooksController = () => import('#controllers/stripe_webhooks_controller')
 const SettingsController = () => import('#controllers/settings_controller')
 const ApiTokensController = () => import('#controllers/api_tokens_controller')
+const DashboardController = () => import('#controllers/dashboard_controller')
+const BirdsController = () => import('#controllers/birds_controller')
+const EggsController = () => import('#controllers/eggs_controller')
+const FeedController = () => import('#controllers/feed_controller')
+const FarmOrdersController = () => import('#controllers/farm_orders_controller')
+const FarmStatsController = () => import('#controllers/farm_stats_controller')
+const FarmActivityController = () => import('#controllers/farm_activity_controller')
+const FarmUsersController = () => import('#controllers/farm_users_controller')
+const OrgSettingsController = () => import('#controllers/org_settings_controller')
+const FarmSyncController = () => import('#controllers/farm_sync_controller')
 
 router.on('/').renderInertia('home')
 router.on('/home').renderInertia('home')
@@ -127,10 +137,23 @@ router
   })
   .use([middleware.auth()])
 
+const farmPageMiddleware = [
+  middleware.auth(),
+  middleware.workspaceOnboarding(),
+  middleware.forcePasswordChange(),
+]
+
 // Normal-user pages (require workspace)
 router
   .group(() => {
-    router.on('/dashboard').renderInertia('dashboard')
+    router.get('/dashboard', [DashboardController, 'index'])
+    router.get('/birds', [BirdsController, 'index'])
+    router.get('/eggs', [EggsController, 'index'])
+    router.get('/feed', [FeedController, 'index'])
+    router.get('/orders', [FarmOrdersController, 'index'])
+    router.get('/stats', [FarmStatsController, 'index'])
+    router.get('/activity', [FarmActivityController, 'index'])
+    router.get('/users', [FarmUsersController, 'index'])
     router.get('/settings', [SettingsController, 'index'])
     router.post('/settings/api-tokens', [ApiTokensController, 'store'])
     router.delete('/settings/api-tokens/:id', [ApiTokensController, 'destroy'])
@@ -138,7 +161,7 @@ router
     router.get('/billing', [BillingController, 'index'])
     router.post('/billing/subscribe', [BillingController, 'subscribe'])
   })
-  .use([middleware.auth(), middleware.workspaceOnboarding()])
+  .use(farmPageMiddleware)
 
 router
   .group(() => {
@@ -184,7 +207,7 @@ router
     router.get('/export', [UsersController, 'exportData'])
   })
   .prefix('api/v1/user')
-  .use(middleware.auth())
+  .use([middleware.auth(), middleware.forcePasswordChange()])
 
 // Workspace routes
 router
@@ -201,6 +224,32 @@ router
   })
   .prefix('api/v1/workspaces')
   .use(middleware.auth())
+
+// Farm API
+router
+  .group(() => {
+    router.get('/dashboard', [DashboardController, 'data'])
+
+    router.post('/birds', [BirdsController, 'store'])
+    router.post('/eggs', [EggsController, 'store'])
+    router.post('/feed', [FeedController, 'store'])
+
+    router.post('/orders', [FarmOrdersController, 'store'])
+    router.post('/orders/:id/approve', [FarmOrdersController, 'approve'])
+    router.post('/orders/:id/cancel', [FarmOrdersController, 'cancel'])
+    router.post('/orders/:id/sold', [FarmOrdersController, 'markSold'])
+
+    router.post('/users/invite', [FarmUsersController, 'store'])
+    router.post('/users/deactivate', [FarmUsersController, 'deactivate'])
+
+    router.get('/settings', [OrgSettingsController, 'show'])
+    router.put('/settings', [OrgSettingsController, 'update'])
+
+    router.post('/sync', [FarmSyncController, 'sync'])
+    router.post('/sync/resolve-review', [FarmSyncController, 'resolveNeedsReview'])
+  })
+  .prefix('api/v1/farm')
+  .use([middleware.auth(), middleware.workspaceOnboarding(), middleware.forcePasswordChange()])
 
 // Public workspace invitation routes
 router
@@ -238,7 +287,30 @@ router
   .get('/:provider/redirect', ({ ally, params }) => {
     return ally.use(params.provider).redirect()
   })
-  .where('provider', /github|google/)
+  .where('provider', /google/)
+
+async function finishOAuthLogin(
+  user: Awaited<ReturnType<OauthService['createOrLoginWithGoogle']>>,
+  ctx: {
+    auth: import('@adonisjs/core/http').HttpContext['auth']
+    response: import('@adonisjs/core/http').HttpContext['response']
+    session: import('@adonisjs/core/http').HttpContext['session']
+  },
+) {
+  if (user.status === 'inactive') {
+    ctx.session.flash('error', { message: 'This account is inactive.' })
+    return ctx.response.redirect('/login')
+  }
+
+  await ctx.auth.use('web').login(user)
+
+  if (user.mustChangePassword) {
+    ctx.session.flash('mustChangePassword', true)
+    return ctx.response.redirect('/settings?tab=password')
+  }
+
+  return ctx.response.redirect(user.role === 'admin' ? '/admin' : '/dashboard')
+}
 
 router.get('/google/callback', async ({ ally, auth, response, session }) => {
   const google = ally.use('google')
@@ -261,30 +333,7 @@ router.get('/google/callback', async ({ ally, auth, response, session }) => {
   const googleUser = await google.user()
   // @ts-expect-error - GoogleUser is the same as the type in the GoogleService
   const user = await new OauthService().createOrLoginWithGoogle(googleUser)
-  await auth.use('web').login(user)
-  return response.redirect(user.role === 'admin' ? '/admin' : '/dashboard')
-})
-
-router.get('/github/callback', async ({ ally, session, response, auth }) => {
-  const gh = ally.use('github')
-
-  const ghUser = await gh.user()
-
-  if (gh.accessDenied()) {
-    session.flash('error', { message: 'You have cancelled the login process' })
-    return response.redirect('/login')
-  }
-
-  if (gh.hasError()) {
-    session.flash('error', { message: gh.getError() })
-    return response.redirect('/login')
-  }
-
-  // @ts-expect-error - GoogleUser is the same as the type in the GoogleService
-  const user = await new OauthService().createOrLoginWithGithub(ghUser)
-  await auth.use('web').login(user)
-
-  return response.redirect(user.role === 'admin' ? '/admin' : '/dashboard')
+  return finishOAuthLogin(user, { auth, response, session })
 })
 transmit.registerRoutes()
 
@@ -295,6 +344,4 @@ router.get('/swagger', async () => {
 // Renders Swagger-UI and passes YAML-output of /swagger
 router.get('/docs', async () => {
   return AutoSwagger.default.rapidoc('/swagger')
-  // return AutoSwagger.default.scalar("/swagger"); to use Scalar instead. If you want, you can pass proxy url as second argument here.
-  // return AutoSwagger.default.rapidoc("/swagger", "view"); to use RapiDoc instead (pass "view" default, or "read" to change the render-style)
 })

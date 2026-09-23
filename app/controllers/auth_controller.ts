@@ -23,7 +23,7 @@ export default class AuthController {
   async signUp({ request, response, logger, auth }: HttpContext) {
     const trx = await db.transaction()
     try {
-      const { confirmPassword, planId, frequency, ...body } =
+      const { confirmPassword, planId, frequency, organizationName, ...body } =
         await request.validateUsing(createUserValidator)
 
       const findUser = await User.query({ client: trx }).where({ email: body.email }).first()
@@ -48,7 +48,7 @@ export default class AuthController {
       }
 
       const workspace = await workspaceService.createWorkspace({
-        name: `${user.fullName || 'My'}'s Workspace`,
+        name: organizationName,
         userId: user.id,
       })
 
@@ -111,10 +111,16 @@ export default class AuthController {
     }
   }
 
-  async login({ request, response, auth, now, session }: HttpContext) {
+  async login({ request, response, auth, session }: HttpContext) {
     const { email, password, remember } = await request.validateUsing(loginValidator)
+    const now = DateTime.now()
 
     const user = await User.verifyCredentials(email, password)
+
+    if (user.status === 'inactive') {
+      return response.forbidden({ error: 'This account is inactive.' })
+    }
+
     await auth.use('web').login(user, remember)
     await user.merge({ lastLoginAt: now }).save()
     // Create or update session
@@ -129,6 +135,18 @@ export default class AuthController {
       lastActivity: now,
     })
 
+    if (user.mustChangePassword) {
+      session.flash('mustChangePassword', true)
+      return response.ok({
+        message: 'Login successful. Please update your password.',
+        data: {
+          user,
+          mustChangePassword: true,
+          redirectTo: '/settings?tab=password',
+        },
+      })
+    }
+
     return response.ok({
       message: 'Login successful',
       data: {
@@ -142,10 +160,17 @@ export default class AuthController {
    * Web login (Inertia form POST). Same as login but redirects in one response
    * so the session cookie is set before any follow-up request — avoids double login.
    */
-  async loginWeb({ request, response, auth, now, session }: HttpContext) {
+  async loginWeb({ request, response, auth, session }: HttpContext) {
     try {
       const { email, password, remember, referrer } = await request.validateUsing(loginValidator)
+      const now = DateTime.now()
       const user = await User.verifyCredentials(email, password)
+
+      if (user.status === 'inactive') {
+        session.flash('error', { message: 'This account is inactive.' })
+        return response.redirect().status(303).toPath('/login')
+      }
+
       await auth.use('web').login(user, remember)
       await user.merge({ lastLoginAt: now }).save()
 
@@ -159,6 +184,11 @@ export default class AuthController {
         lastActivity: now,
       })
 
+      if (user.mustChangePassword) {
+        session.flash('mustChangePassword', true)
+        return response.redirect().status(303).toPath('/settings?tab=password')
+      }
+
       const redirectTo =
         referrer?.startsWith('/') && !referrer.startsWith('//')
           ? referrer
@@ -166,12 +196,12 @@ export default class AuthController {
             ? '/admin'
             : '/dashboard'
       return response.redirect().status(303).toPath(redirectTo)
-    } catch (error: unknown) {
+    } catch {
       response.badRequest({ error: 'Invalid email or password.' })
     }
   }
 
-  async logout({ auth, request, response, session }: HttpContext) {
+  async logout({ auth, response, session }: HttpContext) {
     const user = auth.user
     const deviceSessionId = session.get('deviceSessionId') as string | undefined
     if (user && deviceSessionId) {
@@ -240,7 +270,8 @@ export default class AuthController {
     }
   }
 
-  async resetPassword({ request, response, now, mailer }: HttpContext) {
+  async resetPassword(ctx: HttpContext) {
+    const { request, response } = ctx
     const { newPassword, token } = await request.validateUsing(resetPasswordValidator)
     const resetRequest = await PasswordReset.findBy('token', token)
 
@@ -250,8 +281,9 @@ export default class AuthController {
           'The reset token provided is invalid or has expired. Request another password reset.',
       })
     }
-    const expiresAt = resetRequest.expiresAt.toMillis()
-    if (expiresAt < now.toMillis()) {
+    const now = DateTime.now()
+    const expiresAt = resetRequest.expiresAt
+    if (!expiresAt || expiresAt.toMillis() < now.toMillis()) {
       return response.badRequest({
         error: 'Token has expired. Request another password reset',
       })
@@ -260,13 +292,16 @@ export default class AuthController {
     const user = await User.findOrFail(resetRequest.userId)
     user.password = newPassword
     await user.save()
-
-    mailer.send('reset-password', {
-      email: user.email,
-      fullName: user.fullName || 'user',
-    })
-
     await resetRequest.delete()
+
+    try {
+      await ctx.mailer.send('reset-password', {
+        email: user.email,
+        fullName: user.fullName || 'user',
+      })
+    } catch {
+      // Email is best-effort; password was already updated
+    }
 
     return response.ok({
       message: 'Password reset successful. We will log you out of all previous sessions',

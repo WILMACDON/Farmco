@@ -50,8 +50,6 @@ export function NotificationCenter({ userId, initialUnreadCount = 0 }: Notificat
         notifications: PaginatedResponse<Notification>
         unreadCount: number
       }>('/notifications', { params: { perPage: 10 } })
-
-
     },
     enabled: isOpen,
     staleTime: 30000, // 30 seconds
@@ -61,7 +59,6 @@ export function NotificationCenter({ userId, initialUnreadCount = 0 }: Notificat
 
   const notifications = notificationsData?.data?.notifications.data || []
   const unreadCount = notificationsData?.data?.unreadCount ?? initialUnreadCount
-
 
   // Fetch unread count separately (can be used independently)
   const { data: unreadCountData } = useQuery({
@@ -236,7 +233,9 @@ export function NotificationCenter({ userId, initialUnreadCount = 0 }: Notificat
         </ScrollArea>
         <div className='border-t p-2'>
           <Button variant='ghost' size='sm' className='w-full text-xs' asChild>
-            <Link href='/notifications' className='text-xs'>View all notifications</Link>
+            <Link href='/notifications' className='text-xs'>
+              View all notifications
+            </Link>
           </Button>
         </div>
       </DropdownMenuContent>

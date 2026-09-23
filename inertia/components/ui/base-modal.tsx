@@ -55,7 +55,7 @@ export function BaseModal({
   const [internalOpen, setInternalOpen] = useState(false)
   const isControlled = open !== undefined
   const isOpen = isControlled ? open : internalOpen
-  const setIsOpen = isControlled ? onOpenChange || (() => { }) : setInternalOpen
+  const setIsOpen = isControlled ? onOpenChange || (() => {}) : setInternalOpen
 
   const contentRef = useRef<HTMLDivElement>(null)
 

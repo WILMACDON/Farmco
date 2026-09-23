@@ -7,12 +7,6 @@ const allyConfig = defineConfig({
     clientSecret: env.get('GOOGLE_CLIENT_SECRET') as string,
     callbackUrl: env.get('GOOGLE_CALLBACK_URL') as string,
   }),
-
-  github: services.github({
-    clientId: env.get('GITHUB_CLIENT_ID') as string,
-    clientSecret: env.get('GITHUB_CLIENT_SECRET') as string,
-    callbackUrl: env.get('GITHUB_CALLBACK_URL') as string,
-  }),
 })
 
 export default allyConfig

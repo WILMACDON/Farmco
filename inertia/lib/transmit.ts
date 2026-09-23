@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 
 export const transmitClient = new Transmit({
   baseUrl: 'http://localhost:3333',
-  onSubscription(channel) {
+  onSubscription(_channel) {
     // console.log(`Subscribed to ${channel}`)
   },
 })

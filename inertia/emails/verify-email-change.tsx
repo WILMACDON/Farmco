@@ -1,10 +1,4 @@
-import {
-  EmailButton,
-  EmailHeading,
-  EmailLink,
-  EmailText,
-  EmailWrapper,
-} from '#emails/layout'
+import { EmailButton, EmailHeading, EmailLink, EmailText, EmailWrapper } from '#emails/layout'
 import type { Emails } from '#types/mails'
 
 function VerifyEmailChange(props: Emails['verify-email-change']) {

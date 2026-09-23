@@ -2,7 +2,7 @@ import { Head, Link, router } from '@inertiajs/react'
 import { AlertCircle, ArrowLeft, Home, RefreshCw } from 'lucide-react'
 import { PublicLayout } from '@/components/layouts/public'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface ServerErrorProps {
   error: {

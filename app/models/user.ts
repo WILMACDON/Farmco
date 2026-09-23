@@ -32,6 +32,15 @@ export default class User extends compose(SuperBaseModel, AuthFinder) {
   declare role: 'admin' | 'normal_user'
 
   @column()
+  declare status: 'active' | 'inactive'
+
+  @column()
+  declare mustChangePassword: boolean
+
+  @column()
+  declare createdByUserId: string | null
+
+  @column()
   declare pendingEmail: string | null
 
   @column({ serializeAs: null })
@@ -86,6 +95,9 @@ export default class User extends compose(SuperBaseModel, AuthFinder) {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
+
+  @belongsTo(() => User, { foreignKey: 'createdByUserId' })
+  declare createdBy: BelongsTo<typeof User>
 
   @hasMany(() => SessionDevice)
   declare sessions: HasMany<typeof SessionDevice>

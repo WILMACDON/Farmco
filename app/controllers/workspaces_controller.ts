@@ -18,7 +18,7 @@ export default class WorkspacesController {
   /**
    * Create a new workspace.
    */
-  async store({ auth, request, response, now }: HttpContext) {
+  async store({ auth, request, response }: HttpContext) {
     const user = auth.getUserOrFail()
     const { name } = await request.validateUsing(createWorkspaceValidator)
 
@@ -39,7 +39,7 @@ export default class WorkspacesController {
   /**
    * Onboarding endpoint — create the user's first workspace.
    */
-  async onboard({ auth, request, response, now }: HttpContext) {
+  async onboard({ auth, request, response }: HttpContext) {
     const user = auth.getUserOrFail()
     const { name } = await request.validateUsing(createWorkspaceValidator)
 

@@ -69,7 +69,11 @@ export function AccountTab() {
             title='Are you absolutely sure?'
             description='This action cannot be undone. This will permanently delete your account and remove all your data from our servers. Please enter your password to confirm.'
             trigger={
-              <Button variant='destructive' leftIcon={<Trash2 />} isLoading={isDeleting} loadingText='Deleting…'>
+              <Button
+                variant='destructive'
+                leftIcon={<Trash2 />}
+                isLoading={isDeleting}
+                loadingText='Deleting…'>
                 Delete Account
               </Button>
             }

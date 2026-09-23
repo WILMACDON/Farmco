@@ -1,3 +1,6 @@
+import { Head, Link, useForm } from '@inertiajs/react'
+import { useMemo } from 'react'
+import { toast } from 'sonner'
 import { AppLogo } from '@/components/app_logo'
 import { PublicLayout } from '@/components/layouts/public'
 import { Alert, AlertDescription } from '@/components/ui'
@@ -6,9 +9,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/ui/password_input'
-import { Head, Link, useForm } from '@inertiajs/react'
-import { useMemo } from 'react'
-import { toast } from 'sonner'
 
 interface LoginProps {
   errors: { message?: string }
@@ -25,9 +25,15 @@ function getRedirectFromUrl(): string | null {
 export default function Login({ errors }: LoginProps) {
   const intendedRedirect = useMemo(() => getRedirectFromUrl(), [])
 
-  const { data, setData, post, processing, errors: formErrors } = useForm({
-    email: 'admin@test.com',
-    password: 'password',
+  const {
+    data,
+    setData,
+    post,
+    processing,
+    errors: formErrors,
+  } = useForm({
+    email: 'test@gmail.com',
+    password: 'test123',
     remember: false,
     referrer: intendedRedirect ?? '',
   })
@@ -57,7 +63,9 @@ export default function Login({ errors }: LoginProps) {
           </div>
 
           <div className='text-center space-y-1'>
-            <h1 className='font-display text-xl font-semibold tracking-tight'>Sign in to your account</h1>
+            <h1 className='font-display text-xl font-semibold tracking-tight'>
+              Sign in to your account
+            </h1>
             <p className='text-sm text-muted-foreground'>
               Don't have an account?{' '}
               <Link
@@ -74,17 +82,11 @@ export default function Login({ errors }: LoginProps) {
             </Alert>
           ) : null}
 
-          <div className='grid grid-cols-2 gap-3'>
-            <a href='/github/redirect'>
-              <Button type='button' variant='outline' disabled={processing} className='w-full'>
-                <img src='/icons/github.svg' alt='GitHub' className='h-4 w-4 text-black' />
-                GitHub
-              </Button>
-            </a>
+          <div className='grid grid-cols-1 gap-3'>
             <a href='/google/redirect'>
               <Button type='button' variant='outline' disabled={processing} className='w-full'>
                 <img src='/icons/google.svg' alt='Google' className='h-4 w-4' />
-                Google
+                Continue with Google
               </Button>
             </a>
           </div>

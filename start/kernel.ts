@@ -27,7 +27,7 @@ server.use([
   () => import('@adonisjs/static/static_middleware'),
   () => import('@adonisjs/vite/vite_middleware'),
   () => import('@adonisjs/inertia/inertia_middleware'),
-  () => import('@adonisjs/cors/cors_middleware')
+  () => import('@adonisjs/cors/cors_middleware'),
 ])
 
 /**
@@ -54,4 +54,5 @@ export const middleware = router.named({
   normalUser: () => import('#middleware/normal_user_middleware'),
   adminAccess: () => import('#middleware/admin_page_access_middleware'),
   workspaceOnboarding: () => import('#middleware/workspace_onboarding_middleware'),
+  forcePasswordChange: () => import('#middleware/force_password_change_middleware'),
 })

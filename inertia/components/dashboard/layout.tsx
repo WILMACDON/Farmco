@@ -1,4 +1,5 @@
 import { Sidebar } from '@/components/dashboard/sidebar'
+import { FlashToasts } from '@/components/flash-toasts'
 
 interface DashboardLayoutProps {
   children: React.ReactNode | (() => React.ReactNode)
@@ -17,13 +18,14 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   return (
     <Sidebar>
+      <FlashToasts />
       {isLoading ? (
         <div className='flex items-center justify-center h-64'>
           <div className='h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent' />
         </div>
       ) : entityNotFound ? (
         <div className='text-center py-12'>
-          <h2 className='text-2xl font-bold'>{notFoundTitle}</h2>
+          <h2 className='font-display text-2xl font-bold'>{notFoundTitle}</h2>
           <div className='mt-2 text-sm text-muted-foreground'>
             {notFoundMsg || 'The requested record could not be found.'}
           </div>

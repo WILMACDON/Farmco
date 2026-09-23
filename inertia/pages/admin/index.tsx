@@ -1,5 +1,8 @@
+import type { SharedProps } from '@adonisjs/inertia/types'
+import { Head, Link } from '@inertiajs/react'
+import { Activity, Users } from 'lucide-react'
 import type { PaginatedResponse } from '#types/extra'
-import { DataTable, type Column } from '@/components/dashboard/data-table'
+import { type Column, DataTable } from '@/components/dashboard/data-table'
 import { DashboardLayout } from '@/components/dashboard/layout'
 import { AppCard } from '@/components/ui/app-card'
 import { Badge } from '@/components/ui/badge'
@@ -8,9 +11,6 @@ import { HStack } from '@/components/ui/hstack'
 import { SimpleGrid } from '@/components/ui/simplegrid'
 import { StatCard } from '@/components/ui/stat-card'
 import { timeAgo } from '@/lib/date'
-import type { SharedProps } from '@adonisjs/inertia/types'
-import { Head, Link } from '@inertiajs/react'
-import { Activity, Users } from 'lucide-react'
 
 type ActivityRow = {
   id: string
@@ -27,23 +27,23 @@ const activityColumns: Column<ActivityRow>[] = [
   {
     key: 'event',
     header: 'Event',
-    cell: (row: ActivityRow) => <Badge variant="secondary">{row.event}</Badge>,
+    cell: (row: ActivityRow) => <Badge variant='secondary'>{row.event}</Badge>,
   },
   {
     key: 'auditable_type',
     header: 'Type',
-    cell: (row: ActivityRow) => <div className="text-muted-foreground">{row.auditable_type}</div>,
+    cell: (row: ActivityRow) => <div className='text-muted-foreground'>{row.auditable_type}</div>,
   },
   {
     key: 'user',
     header: 'User',
-    cell: (row: ActivityRow) => <div className="text-muted-foreground">{row.user_full_name}</div>,
+    cell: (row: ActivityRow) => <div className='text-muted-foreground'>{row.user_full_name}</div>,
   },
   {
     key: 'created_at',
     header: 'When',
     cell: (row: ActivityRow) => (
-      <div className="text-right text-muted-foreground">
+      <div className='text-right text-muted-foreground'>
         {row.created_at ? timeAgo(row.created_at) : '—'}
       </div>
     ),

@@ -1,5 +1,5 @@
-import speakeasy from 'speakeasy'
 import QRCode from 'qrcode'
+import speakeasy from 'speakeasy'
 import env from '#start/env'
 
 class TwoFactorService {
@@ -7,7 +7,7 @@ class TwoFactorService {
    * Generate a secret for 2FA
    */
   generateSecret(userEmail: string) {
-    const appName = env.get('APP_NAME', 'Starter Template')
+    const appName = env.get('APP_NAME', 'Farmco')
     return speakeasy.generateSecret({
       name: `${appName} (${userEmail})`,
       issuer: appName,

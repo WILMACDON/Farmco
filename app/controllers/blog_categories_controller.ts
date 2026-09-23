@@ -20,4 +20,3 @@ export default class BlogCategoriesController {
     return response.redirect('/blog/admin/categories')
   }
 }
-

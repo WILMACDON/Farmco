@@ -1,16 +1,16 @@
+import type { SharedProps } from '@adonisjs/inertia/types'
+import { Head, Link, router } from '@inertiajs/react'
+import { Edit, Plus, Tags, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import type { PaginatedResponse } from '#types/extra'
 import type { RawBlogPost } from '#types/model-types'
-import { DataTable, type Column } from '@/components/dashboard/data-table'
+import { type Column, DataTable } from '@/components/dashboard/data-table'
 import { DashboardLayout } from '@/components/dashboard/layout'
 import { PageHeader } from '@/components/dashboard/page_header'
 import { AppCard } from '@/components/ui/app-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useInertiaParams } from '@/hooks/use-inertia-params'
-import type { SharedProps } from '@adonisjs/inertia/types'
-import { Head, Link, router } from '@inertiajs/react'
-import { Edit, Plus, Tags, Trash2 } from 'lucide-react'
-import { useState } from 'react'
 
 interface BlogAdminIndexProps extends SharedProps {
   posts: PaginatedResponse<RawBlogPost>
@@ -22,7 +22,7 @@ function isPublished(post: RawBlogPost) {
 
 function getBlogPostColumns(
   isDeletingId: string | null,
-  setIsDeletingId: (id: string | null) => void
+  setIsDeletingId: (id: string | null) => void,
 ): Column<RawBlogPost>[] {
   return [
     {
@@ -30,9 +30,9 @@ function getBlogPostColumns(
       header: 'Title',
       sortable: true,
       cell: (row) => (
-        <div className="space-y-1">
-          <div className="font-medium">{row.title}</div>
-          <div className="text-xs text-muted-foreground">/{row.slug}</div>
+        <div className='space-y-1'>
+          <div className='font-medium'>{row.title}</div>
+          <div className='text-xs text-muted-foreground'>/{row.slug}</div>
         </div>
       ),
     },
@@ -59,21 +59,21 @@ function getBlogPostColumns(
       key: 'actions',
       header: 'Actions',
       cell: (row) => (
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="ghost" size="icon" asChild>
+        <div className='flex items-center justify-end gap-2'>
+          <Button variant='ghost' size='icon' asChild>
             <Link href={`/admin/blog/${row.id}/edit`}>
-              <Edit className="h-4 w-4" />
+              <Edit className='h-4 w-4' />
             </Link>
           </Button>
           {row.publishedAt ? (
-            <Button variant="ghost" size="icon" asChild>
+            <Button variant='ghost' size='icon' asChild>
               <Link href={`/blog/${row.slug}`}>View</Link>
             </Button>
           ) : null}
           <Button
-            variant="ghost"
-            size="icon"
-            className="text-destructive hover:text-destructive"
+            variant='ghost'
+            size='icon'
+            className='text-destructive hover:text-destructive'
             isLoading={isDeletingId === row.id}
             onClick={() => {
               if (!confirm('Delete this post?')) return
@@ -82,9 +82,8 @@ function getBlogPostColumns(
                 preserveScroll: true,
                 onFinish: () => setIsDeletingId(null),
               })
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
+            }}>
+            <Trash2 className='h-4 w-4' />
           </Button>
         </div>
       ),

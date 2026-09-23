@@ -19,6 +19,12 @@ export default class Workspace extends compose(SuperBaseModel, Auditable) {
   @column()
   declare createdByUserId: string
 
+  @column()
+  declare eggsPerCrate: number
+
+  @column()
+  declare lowFeedThreshold: number
+
   // Billing Fields
   @column()
   declare stripeCustomerId: string | null

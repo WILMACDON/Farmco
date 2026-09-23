@@ -5,9 +5,7 @@ function VerifyEmail(props: Emails['verify-email']) {
   return (
     <EmailWrapper>
       <EmailHeading>Verify Your Email Address</EmailHeading>
-      <EmailText>
-        Hi {props.fullName || 'there'},
-      </EmailText>
+      <EmailText>Hi {props.fullName || 'there'},</EmailText>
       <EmailText>
         Thank you for signing up! Please verify your email address by clicking the button below.
       </EmailText>

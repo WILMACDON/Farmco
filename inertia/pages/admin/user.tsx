@@ -1,3 +1,6 @@
+import type { SharedProps } from '@adonisjs/inertia/types'
+import { Head, Link, router, usePage } from '@inertiajs/react'
+import { Activity, User as UserIcon } from 'lucide-react'
 import type { Column, PaginatedResponse } from '#types/extra'
 import { DataTable } from '@/components/dashboard/data-table'
 import { DashboardLayout } from '@/components/dashboard/layout'
@@ -11,9 +14,6 @@ import { Separator } from '@/components/ui/seperator'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useInertiaParams } from '@/hooks/use-inertia-params'
-import type { SharedProps } from '@adonisjs/inertia/types'
-import { Head, Link, router, usePage } from '@inertiajs/react'
-import { Activity, User as UserIcon } from 'lucide-react'
 
 type AdminUserDetail = {
   id: string
@@ -108,11 +108,9 @@ export default function AdminUserPage({ targetUser, activity }: AdminUserPagePro
           title={targetUser.fullName || targetUser.email}
           description={targetUser.email}
           actions={
-
-              <Button variant='outline' asChild>
-                <Link href={`/admin/users/${targetUser.id}/edit`}>Edit user</Link>
-              </Button>
-
+            <Button variant='outline' asChild>
+              <Link href={`/admin/users/${targetUser.id}/edit`}>Edit user</Link>
+            </Button>
           }
         />
 

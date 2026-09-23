@@ -149,7 +149,7 @@ export default class UsersController {
       return response.badRequest({ error: 'Current password is incorrect' })
     }
 
-    await user.merge({ password: body.newPassword }).save()
+    await user.merge({ password: body.newPassword, mustChangePassword: false }).save()
 
     // Send email notification
     await mailer.send({

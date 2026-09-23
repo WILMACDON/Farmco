@@ -1,9 +1,9 @@
 import { column, manyToMany } from '@adonisjs/lucid/orm'
 import type { ManyToMany } from '@adonisjs/lucid/types/relations'
-import type { DateTime } from 'luxon'
 import { slugify } from '@adonisjs/lucid-slugify'
-import SuperBaseModel from './super_base.js'
+import type { DateTime } from 'luxon'
 import BlogPost from './blog_post.js'
+import SuperBaseModel from './super_base.js'
 
 export default class BlogTag extends SuperBaseModel {
   static table = 'blog_tags'
@@ -34,4 +34,3 @@ export default class BlogTag extends SuperBaseModel {
   })
   declare posts: ManyToMany<typeof BlogPost>
 }
-

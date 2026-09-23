@@ -54,7 +54,6 @@ export default function Billing({
   invoices = [],
   checkoutState,
 }: BillingProps) {
-
   const [isYearly, setIsYearly] = useState(billingInterval === 'yearly')
   const [loading, setLoading] = useState(false)
   const defaultPlanId =

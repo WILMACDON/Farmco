@@ -1,11 +1,11 @@
 import { belongsTo, column, manyToMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, ManyToMany } from '@adonisjs/lucid/types/relations'
-import type { DateTime } from 'luxon'
 import { slugify } from '@adonisjs/lucid-slugify'
-import SuperBaseModel from './super_base.js'
+import type { DateTime } from 'luxon'
 import BlogAuthor from './blog_author.js'
 import BlogCategory from './blog_category.js'
 import BlogTag from './blog_tag.js'
+import SuperBaseModel from './super_base.js'
 
 export default class BlogPost extends SuperBaseModel {
   static table = 'blog_posts'
@@ -64,4 +64,3 @@ export default class BlogPost extends SuperBaseModel {
   })
   declare authors: ManyToMany<typeof BlogAuthor>
 }
-

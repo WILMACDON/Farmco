@@ -44,7 +44,7 @@ export function DatePicker({
   return (
     <div className='relative'>
       <Popover>
-        <PopoverTrigger >
+        <PopoverTrigger>
           <Button
             id={id}
             type='button'

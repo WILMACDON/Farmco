@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/react'
-import { Copy, Plus, Trash2 } from 'lucide-react'
+import { Copy, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { AppCard } from '@/components/ui/app-card'

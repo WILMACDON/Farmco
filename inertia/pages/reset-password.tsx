@@ -1,3 +1,8 @@
+import { Head, Link, router } from '@inertiajs/react'
+import { useMutation } from '@tanstack/react-query'
+import { useFormik } from 'formik'
+import { toast } from 'sonner'
+import * as yup from 'yup'
 import { AppLogo } from '@/components/app_logo'
 import { PublicLayout } from '@/components/layouts/public'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -6,11 +11,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { type ServerErrorResponse, serverErrorResponder } from '@/lib/error'
 import api from '@/lib/http'
-import { Head, Link, router } from '@inertiajs/react'
-import { useMutation } from '@tanstack/react-query'
-import { useFormik } from 'formik'
-import { toast } from 'sonner'
-import * as yup from 'yup'
 
 interface ResetPasswordValues {
   token: string
@@ -119,11 +119,7 @@ export default function ResetPassword({ qs }: { qs: { token: string } }) {
               )}
             </div>
 
-            <Button
-              type='submit'
-              className='w-full'
-              isLoading={isPending}
-              loadingText='Resetting…'>
+            <Button type='submit' className='w-full' isLoading={isPending} loadingText='Resetting…'>
               Reset password
             </Button>
           </form>

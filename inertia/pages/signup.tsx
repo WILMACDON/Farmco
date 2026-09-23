@@ -1,19 +1,19 @@
-import { AppLogo } from '@/components/app_logo'
-import { PublicLayout } from '@/components/layouts/public'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Head, Link, router } from '@inertiajs/react'
 import { useMutation } from '@tanstack/react-query'
 import { useFormik } from 'formik'
 import { toast } from 'sonner'
-
+import { AppLogo } from '@/components/app_logo'
+import { PublicLayout } from '@/components/layouts/public'
 import { PasswordInput } from '@/components/ui'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { type ServerErrorResponse, serverErrorResponder } from '@/lib/error'
 import api from '@/lib/http'
 
 interface SignupValues {
   fullName: string
+  organizationName: string
   email: string
   password: string
   confirmPassword: string
@@ -39,6 +39,7 @@ export default function SignUp() {
   const formik = useFormik<SignupValues>({
     initialValues: {
       fullName: '',
+      organizationName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -59,7 +60,9 @@ export default function SignUp() {
 
           {/* Heading */}
           <div className='text-center space-y-1'>
-            <h1 className='font-display text-xl font-semibold tracking-tight'>Create your account</h1>
+            <h1 className='font-display text-xl font-semibold tracking-tight'>
+              Create your farm account
+            </h1>
             <p className='text-sm text-muted-foreground'>
               Already have an account?{' '}
               <Link
@@ -71,17 +74,11 @@ export default function SignUp() {
           </div>
 
           {/* OAuth buttons */}
-          <div className='grid grid-cols-2 gap-3'>
-            <a href='/github/redirect'>
-              <Button type='button' variant='outline' disabled={isPending} className='w-full'>
-                <img src='/icons/github.svg' alt='GitHub' className='h-4 w-4' />
-                GitHub
-              </Button>
-            </a>
+          <div className='grid grid-cols-1 gap-3'>
             <a href='/google/redirect'>
               <Button type='button' variant='outline' disabled={isPending} className='w-full'>
                 <img src='/icons/google.svg' alt='Google' className='h-4 w-4' />
-                Google
+                Continue with Google
               </Button>
             </a>
           </div>
@@ -99,14 +96,31 @@ export default function SignUp() {
           {/* Form */}
           <form onSubmit={formik.handleSubmit} className='space-y-4'>
             <div className='space-y-2'>
-              <Label htmlFor='fullName'>Full Name</Label>
+              <Label htmlFor='fullName'>Full name</Label>
               <Input
                 id='fullName'
                 type='text'
                 {...formik.getFieldProps('fullName')}
                 required
-                placeholder='John Doe'
+                placeholder='Ada Okonkwo'
+                className='min-h-12'
               />
+            </div>
+
+            <div className='space-y-2'>
+              <Label htmlFor='organizationName'>Farm / organization name</Label>
+              <Input
+                id='organizationName'
+                type='text'
+                {...formik.getFieldProps('organizationName')}
+                required
+                minLength={2}
+                placeholder='Greenfield Poultry'
+                className='min-h-12'
+              />
+              <p className='text-xs text-muted-foreground'>
+                This becomes your farm account name. You can change it later in settings.
+              </p>
             </div>
 
             <div className='space-y-2'>
@@ -117,6 +131,7 @@ export default function SignUp() {
                 {...formik.getFieldProps('email')}
                 required
                 placeholder='you@example.com'
+                className='min-h-12'
               />
             </div>
 
@@ -127,22 +142,24 @@ export default function SignUp() {
                 {...formik.getFieldProps('password')}
                 required
                 placeholder='••••••••'
+                className='min-h-12'
               />
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='confirmPassword'>Confirm Password</Label>
+              <Label htmlFor='confirmPassword'>Confirm password</Label>
               <PasswordInput
                 id='confirmPassword'
                 required
                 placeholder='••••••••'
                 {...formik.getFieldProps('confirmPassword')}
+                className='min-h-12'
               />
             </div>
 
             <Button
               type='submit'
-              className='w-full'
+              className='w-full min-h-11'
               isLoading={isPending}
               loadingText='Creating account…'>
               Sign up

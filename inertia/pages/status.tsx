@@ -161,7 +161,7 @@ export default function StatusPage({ status }: StatusPageProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {status.checks.map((check, index) => (
+                {status.checks.map((check, _index) => (
                   <TableRow key={check.name}>
                     <TableCell className='font-medium'>
                       <div className='flex items-center gap-2'>

@@ -1,6 +1,7 @@
 import type { SharedProps } from '@adonisjs/inertia/types'
 import { Link, router, usePage } from '@inertiajs/react'
 import { ArrowRight, Menu } from 'lucide-react'
+import { AppLogo } from '@/components/app_logo'
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -34,29 +35,20 @@ function PublicNavbarActions({
   const isLoggedIn = Boolean(page.props.isLoggedIn)
   const user = page.props.user as { role?: string } | null
   const isAdmin = user?.role === 'admin'
-
   const dashboardHref = isAdmin ? '/admin' : '/dashboard'
 
   return (
     <div className='flex items-center gap-2'>
-      {/* Desktop links - use Link with button styles so Inertia navigation works on first click */}
-      <div className='hidden md:flex items-center gap-2'>
+      <div className='hidden items-center gap-2 md:flex'>
         <Link href='/' className={cn(buttonVariants({ variant: 'ghost' }))}>
           Home
-        </Link>
-        <Link href='/pricing' className={cn(buttonVariants({ variant: 'ghost' }))}>
-          Pricing
-        </Link>
-        <Link href='/blog' className={cn(buttonVariants({ variant: 'ghost' }))}>
-          Blog
         </Link>
         <Link href='/contact' className={cn(buttonVariants({ variant: 'ghost' }))}>
           Contact
         </Link>
       </div>
 
-      {/* Desktop auth CTAs + optional extra actions */}
-      <div className='hidden md:flex items-center gap-2'>
+      <div className='hidden items-center gap-2 md:flex'>
         {isLoggedIn ? (
           <Link
             href={dashboardHref}
@@ -69,9 +61,7 @@ function PublicNavbarActions({
             <Link href='/login' className={cn(buttonVariants({ variant: 'ghost' }))}>
               Sign In
             </Link>
-            <Link
-              href='/signup'
-              className={cn(buttonVariants(), 'inline-flex gap-2')}>
+            <Link href='/signup' className={cn(buttonVariants(), 'inline-flex gap-2')}>
               Sign Up
               <ArrowRight className='h-4 w-4' />
             </Link>
@@ -82,7 +72,6 @@ function PublicNavbarActions({
 
       {!hideThemeToggle && <ThemeToggle />}
 
-      {/* Mobile menu (prevents header overflow) */}
       <div className='md:hidden'>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -92,8 +81,6 @@ function PublicNavbarActions({
           </DropdownMenuTrigger>
           <DropdownMenuContent align='end'>
             <DropdownMenuItem onClick={() => router.visit('/')}>Home</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.visit('/pricing')}>Pricing</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.visit('/blog')}>Blog</DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.visit('/contact')}>Contact</DropdownMenuItem>
             <DropdownMenuSeparator />
             {isLoggedIn ? (
@@ -124,7 +111,7 @@ export function PublicLayout({
   hideThemeToggle,
 }: PublicLayoutProps & { className?: string }) {
   return (
-    <div className={cn('min-h-screen dark:bg-background flex flex-col', className)}>
+    <div className={cn('flex min-h-screen flex-col dark:bg-background', className)}>
       {showHeader && (
         <header
           className={cn(
@@ -133,11 +120,9 @@ export function PublicLayout({
               ? 'sticky top-0 bg-background/70 supports-[backdrop-filter]:backdrop-blur-md'
               : 'bg-transparent',
           )}>
-          <div className='max-w-screen-xl mx-auto px-6 py-4 flex items-center justify-between'>
-            <Link href='/' className='flex items-center gap-2 w-fit'>
-              <span className='font-display font-bold text-lg text-foreground'>
-                {import.meta.env.VITE_APP_NAME}
-              </span>
+          <div className='mx-auto flex max-w-screen-xl items-center justify-between px-6 py-4'>
+            <Link href='/' className='flex w-fit items-center gap-2'>
+              <AppLogo />
             </Link>
             <PublicNavbarActions extraActions={actions} hideThemeToggle={hideThemeToggle} />
           </div>
@@ -145,33 +130,19 @@ export function PublicLayout({
       )}
       <main className='flex-1'>{children}</main>
 
-      {showFooter && (
-        <>
-          {footer ?? (
-            <footer className='border-t border-border py-8 px-6'>
-              <div className='max-w-screen-xl mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-                <div className='flex items-center gap-2'>
-                  <div className='leading-tight'>
-                    <div className='font-display font-semibold'>{import.meta.env.VITE_APP_NAME}</div>
-                    <div className='text-sm text-muted-foreground'>
-                      {import.meta.env.VITE_APP_DESCRIPTION}
-                    </div>
-                  </div>
-                </div>
-                <div className='text-sm text-muted-foreground flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3'>
-                  <a href='mailto:support@ekoatlantic.com' className='hover:text-foreground'>
-                    {import.meta.env.VITE_SUPPORT_EMAIL}
-                  </a>
-                  <span className='hidden sm:inline'>•</span>
-                  <span>
-                    © {new Date().getFullYear()} {import.meta.env.VITE_APP_NAME}
-                  </span>
-                </div>
+      {showFooter &&
+        (footer ?? (
+          <footer className='border-t border-border px-6 py-8'>
+            <div className='mx-auto flex max-w-screen-xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+              <AppLogo />
+              <div className='flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:gap-3'>
+                <span>Poultry farm inventory</span>
+                <span className='hidden sm:inline'>•</span>
+                <span>© {new Date().getFullYear()} Farmco</span>
               </div>
-            </footer>
-          )}
-        </>
-      )}
+            </div>
+          </footer>
+        ))}
     </div>
   )
 }

@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
-/* Distinctive typography: avoid Inter/Roboto/Space Grotesk */
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Outfit:wght@100..900&display=swap");
+/* Farmco brand: Fraunces (headings/stats) + Inter (body) — per poultry brand guide */
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap");
 
 /* ================================
    Tailwind v4 Theme Tokens
    ================================ */
 @theme {
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -34,13 +34,18 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
 
   --radius: var(--radius);
+  --radius-field: 10px;
+  --radius-card: 14px;
 
-  /* Charts */
+  /* Charts — green main, yolk comparison, brick for problems */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -61,7 +66,7 @@
   --color-quick-action-red: var(--quick-action-red);
   --color-quick-action-red-bg: var(--quick-action-red-bg);
 
-  /* Sidebar (sidebar = background for bg-sidebar) */
+  /* Sidebar */
   --color-sidebar: var(--sidebar-background);
   --color-sidebar-background: var(--sidebar-background);
   --color-sidebar-foreground: var(--sidebar-foreground);
@@ -85,135 +90,131 @@
   }
 
   /* ================================
-     Light Theme — warm stone + slate (mature, refined)
+     Light Theme — Farmco Eggshell + Field Green
      ================================ */
   :root {
-    /* Core — off-white and warm dark text */
-    --background: #fafaf9;
-    --foreground: #1c1917;
+    --background: #fbf7ee;
+    --foreground: #1f2a22;
 
-    /* Surfaces — slight warmth */
     --card: #ffffff;
-    --card-foreground: #1c1917;
+    --card-foreground: #1f2a22;
     --popover: #ffffff;
-    --popover-foreground: #1c1917;
+    --popover-foreground: #1f2a22;
 
-    /* Brand — medium slate blue (lighter, still refined) */
-    --primary: #475569;
-    --primary-foreground: #f8fafc;
-    --accent: #f5f5f4;
-    --accent-foreground: #1c1917;
+    /* Field Green */
+    --primary: #2f6b3f;
+    --primary-foreground: #ffffff;
+    /* Yolk — key action / highlight */
+    --accent: #f2b632;
+    --accent-foreground: #3a2a00;
 
-    /* UI — warm grays */
-    --secondary: #f5f5f4;
-    --secondary-foreground: #1c1917;
-    --muted: #f5f5f4;
-    --muted-foreground: #57534e;
+    --secondary: #e3efe5;
+    --secondary-foreground: #1f2a22;
+    --muted: #ece8dc;
+    --muted-foreground: #5e6b62;
 
-    --border: #e7e5e4;
-    --input: #e7e5e4;
-    --ring: #475569;
+    --border: #e6dfcc;
+    --input: #e6dfcc;
+    --ring: #f2b632;
 
-    --destructive: #b91c1c;
-    --destructive-foreground: #fafaf9;
+    /* Brick */
+    --destructive: #c4472f;
+    --destructive-foreground: #ffffff;
 
-    --radius: 0.5rem;
+    /* Sky */
+    --info: #2f6f9f;
+    --info-foreground: #ffffff;
 
-    /* Charts */
-    --chart-1: #475569;
-    --chart-2: #334155;
-    --chart-3: #57534e;
-    --chart-4: #a8a29e;
-    --chart-5: #e7e5e4;
+    --radius: 0.625rem;
 
-    /* Quick actions */
-    --quick-action-blue: #1d4ed8;
-    --quick-action-blue-bg: rgba(59, 130, 246, 0.1);
-    --quick-action-green: #15803d;
-    --quick-action-green-bg: rgba(34, 197, 94, 0.1);
-    --quick-action-orange: #c2410c;
-    --quick-action-orange-bg: rgba(249, 115, 22, 0.1);
-    --quick-action-cyan: #0e7490;
-    --quick-action-cyan-bg: rgba(6, 182, 212, 0.1);
-    --quick-action-indigo: #4338ca;
-    --quick-action-indigo-bg: rgba(99, 102, 241, 0.1);
-    --quick-action-red: #b91c1c;
-    --quick-action-red-bg: rgba(239, 68, 68, 0.1);
+    --chart-1: #2f6b3f;
+    --chart-2: #f2b632;
+    --chart-3: #c4472f;
+    --chart-4: #2f6f9f;
+    --chart-5: #5e6b62;
 
-    /* Sidebar — light rail, distinct from page but not dark */
-    --sidebar-background: #f5f5f4;
-    --sidebar-foreground: #1c1917;
-    --sidebar-primary: #475569;
-    --sidebar-primary-foreground: #f8fafc;
-    --sidebar-accent: #e7e5e4;
-    --sidebar-accent-foreground: #1c1917;
-    --sidebar-border: #e7e5e4;
-    --sidebar-ring: #475569;
+    --quick-action-blue: #2f6f9f;
+    --quick-action-blue-bg: #ddebf5;
+    --quick-action-green: #2f6b3f;
+    --quick-action-green-bg: #e3efe5;
+    --quick-action-orange: #8a5f00;
+    --quick-action-orange-bg: #fcf0d2;
+    --quick-action-cyan: #2f6f9f;
+    --quick-action-cyan-bg: #ddebf5;
+    --quick-action-indigo: #2f6b3f;
+    --quick-action-indigo-bg: #e3efe5;
+    --quick-action-red: #c4472f;
+    --quick-action-red-bg: #f8e1db;
+
+    --sidebar-background: #ffffff;
+    --sidebar-foreground: #1f2a22;
+    --sidebar-primary: #2f6b3f;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #e3efe5;
+    --sidebar-accent-foreground: #1f2a22;
+    --sidebar-border: #e6dfcc;
+    --sidebar-ring: #f2b632;
   }
 
   /* ================================
-     Dark Theme — soft dark + slate accent (mature, refined)
+     Dark Theme — deep green-black
      ================================ */
   .dark {
-    /* Core — soft dark, not pure black */
-    --background: #0f0f0f;
-    --foreground: #fafaf9;
+    --background: #131914;
+    --foreground: #eef0e6;
 
-    /* Surfaces */
-    --card: #171717;
-    --card-foreground: #fafaf9;
-    --popover: #171717;
-    --popover-foreground: #fafaf9;
+    --card: #1b231d;
+    --card-foreground: #eef0e6;
+    --popover: #1b231d;
+    --popover-foreground: #eef0e6;
 
-    /* Brand — soft slate so CTAs are visible but not harsh */
-    --primary: #94a3b8;
-    --primary-foreground: #0f172a;
-    --accent: #262626;
-    --accent-foreground: #fafaf9;
+    --primary: #6dbb7f;
+    --primary-foreground: #0f1a12;
+    --accent: #f2b632;
+    --accent-foreground: #3a2a00;
 
-    /* UI */
-    --secondary: #262626;
-    --secondary-foreground: #fafaf9;
-    --muted: #262626;
-    --muted-foreground: #a8a29e;
+    --secondary: #22352a;
+    --secondary-foreground: #eef0e6;
+    --muted: #262e28;
+    --muted-foreground: #a3afa5;
 
-    --border: #404040;
-    --input: #404040;
-    --ring: #94a3b8;
+    --border: #2c382f;
+    --input: #2c382f;
+    --ring: #f2b632;
 
-    --destructive: #991b1b;
-    --destructive-foreground: #fafaf9;
+    --destructive: #ee8a74;
+    --destructive-foreground: #0f1a12;
 
-    /* Charts */
-    --chart-1: #94a3b8;
-    --chart-2: #64748b;
-    --chart-3: #a8a29e;
-    --chart-4: #525252;
-    --chart-5: #262626;
+    --info: #7db6e0;
+    --info-foreground: #0f1a12;
 
-    /* Quick actions */
-    --quick-action-blue: #60a5fa;
-    --quick-action-blue-bg: rgba(96, 165, 250, 0.12);
-    --quick-action-green: #4ade80;
-    --quick-action-green-bg: rgba(74, 222, 128, 0.12);
-    --quick-action-orange: #fb923c;
-    --quick-action-orange-bg: rgba(251, 146, 60, 0.12);
-    --quick-action-cyan: #22d3ee;
-    --quick-action-cyan-bg: rgba(34, 211, 238, 0.12);
-    --quick-action-indigo: #818cf8;
-    --quick-action-indigo-bg: rgba(129, 140, 248, 0.12);
-    --quick-action-red: #f87171;
-    --quick-action-red-bg: rgba(248, 113, 113, 0.12);
+    --chart-1: #6dbb7f;
+    --chart-2: #f2b632;
+    --chart-3: #ee8a74;
+    --chart-4: #7db6e0;
+    --chart-5: #a3afa5;
 
-    /* Sidebar — clearly distinct rail (lighter than content, visible edge) */
-    --sidebar-background: #1a1a1a;
-    --sidebar-foreground: #fafaf9;
-    --sidebar-primary: #94a3b8;
-    --sidebar-primary-foreground: #0f172a;
-    --sidebar-accent: #262626;
-    --sidebar-accent-foreground: #fafaf9;
-    --sidebar-border: #333333;
-    --sidebar-ring: #94a3b8;
+    --quick-action-blue: #7db6e0;
+    --quick-action-blue-bg: #1f3040;
+    --quick-action-green: #6dbb7f;
+    --quick-action-green-bg: #22352a;
+    --quick-action-orange: #f2b632;
+    --quick-action-orange-bg: #3a3120;
+    --quick-action-cyan: #7db6e0;
+    --quick-action-cyan-bg: #1f3040;
+    --quick-action-indigo: #6dbb7f;
+    --quick-action-indigo-bg: #22352a;
+    --quick-action-red: #ee8a74;
+    --quick-action-red-bg: #3c2620;
+
+    --sidebar-background: #1b231d;
+    --sidebar-foreground: #eef0e6;
+    --sidebar-primary: #6dbb7f;
+    --sidebar-primary-foreground: #0f1a12;
+    --sidebar-accent: #22352a;
+    --sidebar-accent-foreground: #eef0e6;
+    --sidebar-border: #2c382f;
+    --sidebar-ring: #f2b632;
   }
 
   * {
@@ -224,25 +225,30 @@
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
   }
 
+  h1,
+  h2,
+  h3,
   .font-display {
     font-family: var(--font-display);
   }
 
-  /* Subtle depth: soft radial gradient for atmosphere */
+  /* Warm farm atmosphere */
   body::before {
     content: "";
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse 90% 60% at 50% -10%, var(--muted) 0%, transparent 55%);
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -15%, color-mix(in oklab, var(--primary) 12%, transparent) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 40% at 100% 0%, color-mix(in oklab, var(--accent) 8%, transparent) 0%, transparent 45%);
     pointer-events: none;
     z-index: -1;
-    opacity: 0.5;
   }
 }
 
-/* Staggered reveal animation (use with [animation-delay]) */
 @keyframes fade-in-up {
   from {
     opacity: 0;

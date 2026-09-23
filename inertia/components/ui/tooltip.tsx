@@ -1,9 +1,32 @@
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip'
-import type * as React from 'react'
+import * as React from 'react'
 import { cn } from '@/lib/utils'
 
 const Tooltip = TooltipPrimitive.Root
-const TooltipTrigger = TooltipPrimitive.Trigger
+
+const TooltipTrigger = React.forwardRef<
+  HTMLElement,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Trigger> & {
+    asChild?: boolean
+  }
+>(({ asChild, children, ...props }, ref) => {
+  if (asChild && React.isValidElement(children)) {
+    return (
+      <TooltipPrimitive.Trigger
+        ref={ref}
+        render={children as React.ReactElement}
+        {...props}
+      />
+    )
+  }
+
+  return (
+    <TooltipPrimitive.Trigger ref={ref} {...props}>
+      {children}
+    </TooltipPrimitive.Trigger>
+  )
+})
+TooltipTrigger.displayName = 'TooltipTrigger'
 
 function TooltipContent({
   className,
@@ -24,16 +47,14 @@ function TooltipContent({
         sideOffset={sideOffset}
         align={align}
         alignOffset={alignOffset}
-        className='z-50'
-      >
+        className='z-50'>
         <TooltipPrimitive.Popup
           className={cn(
             'bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95',
             'rounded-md border border-border px-2 py-1 text-xs shadow-md',
             className,
           )}
-          {...props}
-        >
+          {...props}>
           {children}
           <TooltipPrimitive.Arrow className='fill-popover stroke-border' />
         </TooltipPrimitive.Popup>
@@ -43,4 +64,3 @@ function TooltipContent({
 }
 
 export { Tooltip, TooltipTrigger, TooltipContent }
-

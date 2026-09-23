@@ -6,7 +6,13 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { InputOtp } from '@/components/ui/input_otp'
 import { Label } from '@/components/ui/label'
@@ -51,7 +57,8 @@ export function TwoFactorModal({ open, onOpenChange, onEnabled }: TwoFactorModal
   })
 
   const { mutate: enable2FAMutation, isPending: isEnabling } = useMutation({
-    mutationFn: (values: { token: string }) => api.post<Enable2FAResponse>('/user/2fa/enable', values),
+    mutationFn: (values: { token: string }) =>
+      api.post<Enable2FAResponse>('/user/2fa/enable', values),
     onSuccess: (response) => {
       const data = response.data
       onEnabled?.(data.recoveryCodes)
@@ -94,9 +101,7 @@ export function TwoFactorModal({ open, onOpenChange, onEnabled }: TwoFactorModal
           <div className='space-y-4'>
             <Alert>
               <Shield className='h-4 w-4' />
-              <AlertDescription>
-                Preparing your QR code…
-              </AlertDescription>
+              <AlertDescription>Preparing your QR code…</AlertDescription>
             </Alert>
             <Button
               type='button'
@@ -176,4 +181,3 @@ export function TwoFactorModal({ open, onOpenChange, onEnabled }: TwoFactorModal
     </Dialog>
   )
 }
-

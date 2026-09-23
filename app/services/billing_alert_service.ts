@@ -1,5 +1,5 @@
-import Workspace from '#models/workspace'
 import { DateTime } from 'luxon'
+import Workspace from '#models/workspace'
 
 export type BillingAlertType = 'expired' | 'expiring_soon' | 'past_due' | 'no_subscription'
 
@@ -16,7 +16,9 @@ const EXPIRING_SOON_DAYS = 7
  * Get a billing alert for a workspace based on subscription status and end date.
  * Returns null if no alert is needed (active and not expiring soon, or no subscription).
  */
-export async function getBillingAlertForWorkspace(workspaceId: string): Promise<BillingAlert | null> {
+export async function getBillingAlertForWorkspace(
+  workspaceId: string,
+): Promise<BillingAlert | null> {
   const workspace = await Workspace.find(workspaceId)
   if (!workspace) return null
 
@@ -57,7 +59,7 @@ export async function getBillingAlertForWorkspace(workspaceId: string): Promise<
     return {
       type: 'expiring_soon',
       message: `Your subscription renews in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'}.`,
-      endsAt: endsAt.toISO(),
+      endsAt: endsAt.toISO() ?? undefined,
       cta: '/billing',
     }
   }

@@ -1,0 +1,17 @@
+{
+  "name": "Farmco",
+  "short_name": "Farmco",
+  "description": "Poultry farm inventory — birds, eggs, feed, and orders",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#FBF7EE",
+  "theme_color": "#2F6B3F",
+  "icons": [
+    {
+      "src": "/farmco-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

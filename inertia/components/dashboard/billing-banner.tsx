@@ -37,21 +37,23 @@ export function BillingBanner({ alert, className }: BillingBannerProps) {
 
   return (
     <div
-      role="alert"
+      role='alert'
       className={cn(
         'flex items-center justify-between gap-4 rounded-lg border px-4 py-3 text-sm',
         styles[alert.type],
         className,
       )}>
-      <div className="flex items-center gap-3">
-        <Icon className="h-4 w-4 shrink-0" />
+      <div className='flex items-center gap-3'>
+        <Icon className='h-4 w-4 shrink-0' />
         <span>{alert.message}</span>
       </div>
       <Button
         variant={
-          alert.type === 'expiring_soon' || alert.type === 'no_subscription' ? 'outline' : 'destructive'
+          alert.type === 'expiring_soon' || alert.type === 'no_subscription'
+            ? 'outline'
+            : 'destructive'
         }
-        size="sm"
+        size='sm'
         asChild>
         <Link href={alert.cta}>
           {alert.type === 'expired'

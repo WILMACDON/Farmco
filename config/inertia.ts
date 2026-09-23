@@ -1,9 +1,10 @@
 import app from '@adonisjs/core/services/app'
 import { defineConfig } from '@adonisjs/inertia'
 import type { InferSharedProps } from '@adonisjs/inertia/types'
-import { getBillingAlertForWorkspace } from '#services/billing_alert_service'
 import { getAdminPageAccessForUser } from '#services/admin_access_service'
+import { getBillingAlertForWorkspace } from '#services/billing_alert_service'
 import workspaceService from '#services/workspace_service'
+import { toFarmRole } from '#utils/farm_permissions'
 import env from '#start/env'
 
 const inertiaConfig = defineConfig({
@@ -36,6 +37,16 @@ const inertiaConfig = defineConfig({
         const user = ctx.auth?.user as { id?: string; role?: string } | undefined
         if (!user?.id || user.role === 'admin') return null
         return ctx.session?.get('currentWorkspaceId') ?? null
+      }),
+    farmRole: (ctx) =>
+      ctx.inertia.always(async () => {
+        const user = ctx.auth?.user as { id?: string; role?: string } | undefined
+        if (!user?.id || user.role === 'admin') return null
+        const workspaceId = ctx.session?.get('currentWorkspaceId') as string | undefined
+        if (!workspaceId) return null
+        const membership = await workspaceService.getMembership(workspaceId, user.id)
+        if (!membership) return null
+        return toFarmRole(membership.role)
       }),
     nodeEnv: () => env.get('NODE_ENV'),
     params: (ctx) => ctx.request.params(),

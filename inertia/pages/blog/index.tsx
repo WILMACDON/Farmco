@@ -48,9 +48,7 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
             </Card>
           ) : (
             <>
-              {featured ? (
-                <FeaturedPostCard post={featured} />
-              ) : null}
+              {featured ? <FeaturedPostCard post={featured} /> : null}
 
               {rest.length ? (
                 <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing={6}>
@@ -60,10 +58,7 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
                 </SimpleGrid>
               ) : null}
 
-              <HStack
-                justify='between'
-                align='center'
-                className='flex-col sm:flex-row'>
+              <HStack justify='between' align='center' className='flex-col sm:flex-row'>
                 <div className='text-sm text-muted-foreground'>
                   Page {meta.currentPage} of {meta.lastPage} • {meta.total} posts
                 </div>
@@ -115,7 +110,11 @@ function FeaturedPostCard({ post }: { post: RawBlogPost }) {
             <div className='pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent' />
             <div className='absolute bottom-4 left-4 right-4'>
               <HStack spacing={2} wrap align='center'>
-                {post.category?.name ? <Badge className='bg-background/90 text-foreground' variant='secondary'>{post.category.name}</Badge> : null}
+                {post.category?.name ? (
+                  <Badge className='bg-background/90 text-foreground' variant='secondary'>
+                    {post.category.name}
+                  </Badge>
+                ) : null}
                 <MetaDateAndReadTime post={post} className='text-white/90' />
               </HStack>
             </div>
@@ -129,7 +128,9 @@ function FeaturedPostCard({ post }: { post: RawBlogPost }) {
                   {post.title}
                 </div>
                 {post.summary ? (
-                  <p className='text-muted-foreground text-sm sm:text-base line-clamp-3'>{post.summary}</p>
+                  <p className='text-muted-foreground text-sm sm:text-base line-clamp-3'>
+                    {post.summary}
+                  </p>
                 ) : null}
               </Stack>
 
@@ -167,13 +168,21 @@ function PostCard({ post }: { post: RawBlogPost }) {
           </div>
           <div className='pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent opacity-80' />
           <div className='absolute bottom-3 left-3 right-3 flex flex-wrap items-center gap-2'>
-            {post.category?.name ? <Badge className='bg-background/90 text-foreground' variant='secondary'>{post.category.name}</Badge> : null}
+            {post.category?.name ? (
+              <Badge className='bg-background/90 text-foreground' variant='secondary'>
+                {post.category.name}
+              </Badge>
+            ) : null}
           </div>
         </div>
 
         <CardHeader className='space-y-2'>
-          <CardTitle className='text-xl leading-snug group-hover:underline line-clamp-2'>{post.title}</CardTitle>
-          {post.summary ? <p className='text-sm text-muted-foreground line-clamp-3'>{post.summary}</p> : null}
+          <CardTitle className='text-xl leading-snug group-hover:underline line-clamp-2'>
+            {post.title}
+          </CardTitle>
+          {post.summary ? (
+            <p className='text-sm text-muted-foreground line-clamp-3'>{post.summary}</p>
+          ) : null}
         </CardHeader>
 
         <CardContent>
@@ -185,7 +194,9 @@ function PostCard({ post }: { post: RawBlogPost }) {
                     {tag.name}
                   </Badge>
                 ))}
-                {post.tags.length > 3 ? <Badge variant='outline'>+{post.tags.length - 3}</Badge> : null}
+                {post.tags.length > 3 ? (
+                  <Badge variant='outline'>+{post.tags.length - 3}</Badge>
+                ) : null}
               </HStack>
             ) : null}
           </Stack>
@@ -214,8 +225,12 @@ function AuthorRow({ post }: { post: RawBlogPost }) {
       <div className='flex -space-x-2'>
         {authors.slice(0, 2).map((a) => (
           <Avatar key={a.id} className='h-7 w-7 border border-border'>
-            {a.avatarUrl ? <AvatarImage src={a.avatarUrl} alt={a.name || a.email || 'Author'} /> : null}
-            <AvatarFallback className='text-[10px]'>{getInitials(a.name || a.email || 'A')}</AvatarFallback>
+            {a.avatarUrl ? (
+              <AvatarImage src={a.avatarUrl} alt={a.name || a.email || 'Author'} />
+            ) : null}
+            <AvatarFallback className='text-[10px]'>
+              {getInitials(a.name || a.email || 'A')}
+            </AvatarFallback>
           </Avatar>
         ))}
       </div>
@@ -253,7 +268,11 @@ function MetaDateAndReadTime({ post, className }: { post: RawBlogPost; className
 
 function formatDate(value: string) {
   try {
-    return new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    return new Date(value).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
   } catch {
     return value
   }
@@ -273,4 +292,3 @@ function getInitials(value: string) {
   const last = parts.length > 1 ? parts[parts.length - 1]?.[0] : ''
   return `${first}${last}`.toUpperCase()
 }
-

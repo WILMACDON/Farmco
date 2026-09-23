@@ -56,7 +56,7 @@ export function BaseDialog({
   const [internalOpen, setInternalOpen] = React.useState(false)
   const isControlled = open !== undefined
   const isOpen = isControlled ? open : internalOpen
-  const setIsOpen = isControlled ? onOpenChange || (() => { }) : setInternalOpen
+  const setIsOpen = isControlled ? onOpenChange || (() => {}) : setInternalOpen
 
   const contentRef = React.useRef<HTMLDivElement>(null)
 
@@ -120,7 +120,7 @@ export function BaseDialog({
             type='button'
             className={cn(
               primaryVariant === 'destructive' &&
-              'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+                'bg-destructive text-destructive-foreground hover:bg-destructive/90',
             )}>
             {isLoading ? 'Loading...' : primaryText}
           </AlertDialogAction>

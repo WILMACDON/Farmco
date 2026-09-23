@@ -1,6 +1,6 @@
+import { appUrl } from '#emails/global'
 import { EmailButton, EmailHeading, EmailLink, EmailText, EmailWrapper } from '#emails/layout'
 import type { Emails } from '#types/mails'
-import { appUrl } from '#emails/global'
 
 function ForgotPassword(props: Emails['forgot-password']) {
   const resetUrl = `${appUrl}/reset-password?token=${props.token}`
@@ -8,9 +8,7 @@ function ForgotPassword(props: Emails['forgot-password']) {
   return (
     <EmailWrapper>
       <EmailHeading>Reset Your Password</EmailHeading>
-      <EmailText>
-        Hi {props.fullName || 'there'},
-      </EmailText>
+      <EmailText>Hi {props.fullName || 'there'},</EmailText>
       <EmailText>
         We received a request to reset your password. Click the button below to create a new
         password.

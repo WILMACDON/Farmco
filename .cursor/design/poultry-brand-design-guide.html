@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FlockLedger: Brand and Design Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#FBF7EE;--surface:#FFFFFF;--ink:#1F2A22;--muted:#5E6B62;--line:#E6DFCC;
+--primary:#2F6B3F;--on-primary:#FFFFFF;--primary-soft:#E3EFE5;
+--accent:#F2B632;--on-accent:#3A2A00;--accent-soft:#FCF0D2;
+--danger:#C4472F;--danger-soft:#F8E1DB;--info:#2F6F9F;--info-soft:#DDEBF5;--neutral-soft:#ECE8DC;
+--code:#F3EEDF;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+--bg:#131914;--surface:#1B231D;--ink:#EEF0E6;--muted:#A3AFA5;--line:#2C382F;
+--primary:#6DBB7F;--on-primary:#0F1A12;--primary-soft:#22352A;
+--accent:#F2B632;--on-accent:#3A2A00;--accent-soft:#3A3120;
+--danger:#EE8A74;--danger-soft:#3C2620;--info:#7DB6E0;--info-soft:#1F3040;--neutral-soft:#262E28;--code:#1F2821;}}
+:root[data-theme="dark"]{
+--bg:#131914;--surface:#1B231D;--ink:#EEF0E6;--muted:#A3AFA5;--line:#2C382F;
+--primary:#6DBB7F;--on-primary:#0F1A12;--primary-soft:#22352A;
+--accent:#F2B632;--on-accent:#3A2A00;--accent-soft:#3A3120;
+--danger:#EE8A74;--danger-soft:#3C2620;--info:#7DB6E0;--info-soft:#1F3040;--neutral-soft:#262E28;--code:#1F2821;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+h1,h2,h3{font-family:Fraunces,Georgia,'Times New Roman',serif;line-height:1.2;margin:0}
+main{max-width:920px;margin:0 auto;padding:32px 20px 80px}
+header.hero{padding:48px 0 24px;border-bottom:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:12px;font:700 28px Fraunces,Georgia,serif}
+h1{font-size:clamp(32px,6vw,48px);margin-top:20px}
+.lead{color:var(--muted);max-width:640px;margin:12px 0 0}
+section{padding:40px 0 8px}
+h2{font-size:28px;margin-bottom:6px}
+h3{font-size:18px;margin:24px 0 8px}
+p{margin:8px 0}.muted{color:var(--muted)}.small{font-size:14px}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+nav.toc a{font-size:14px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;color:var(--ink);text-decoration:none;background:var(--surface)}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.sw{height:64px;border-radius:10px;border:1px solid var(--line);margin-bottom:10px}
+.sw+b{display:block;font-size:14px}.sw~span{font-size:13px;color:var(--muted);display:block}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
+code{background:var(--code);padding:2px 6px;border-radius:6px}
+.scroll{overflow-x:auto;max-width:100%}
+pre{background:var(--code);padding:16px;border-radius:12px;overflow-x:auto;margin:10px 0;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;font-size:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:10px;border:1px solid transparent;font:600 15px Inter,sans-serif;cursor:pointer}
+.b-p{background:var(--primary);color:var(--on-primary)}
+.b-a{background:var(--accent);color:var(--on-accent)}
+.b-s{background:transparent;border-color:var(--line);color:var(--ink)}
+.b-d{background:var(--danger-soft);color:var(--danger);border-color:var(--danger)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:600}
+.badge::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.g{background:var(--primary-soft);color:var(--primary)}.y{background:var(--accent-soft);color:#8A5F00}
+.r{background:var(--danger-soft);color:var(--danger)}.b{background:var(--info-soft);color:var(--info)}.n{background:var(--neutral-soft);color:var(--muted)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .y{color:var(--accent)}}
+:root[data-theme="dark"] .y{color:var(--accent)}
+label{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+input,select{width:100%;min-height:48px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:400 16px Inter,sans-serif}
+input:focus{outline:3px solid var(--accent);outline-offset:1px}
+.stat{font:700 34px Fraunces,Georgia,serif}
+.do li,.dont li{margin:6px 0}
+ul{padding-left:20px}
+.two{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+</style>
+</head>
+<body>
+<main>
+<header class="hero">
+  <div class="logo">
+    <svg width="44" height="52" viewBox="0 0 44 52" aria-hidden="true"><path d="M22 2C11 2 3 20 3 32c0 11 8 18 19 18s19-7 19-18C41 20 33 2 22 2z" fill="#F2B632"/><path d="M11 34c4 5 9 7 14 6 5-1 8-4 9-8-5 3-10 3-14 0-3-2-6-2-9 2z" fill="#2F6B3F"/></svg>
+    FlockLedger
+  </div>
+  <h1>Brand and Design Guide</h1>
+  <p class="lead">A working guide for the poultry farm inventory app. "FlockLedger" is a placeholder name; swap it for your real farm name and everything else still applies.</p>
+  <nav class="toc"><a href="#brand">Brand</a><a href="#color">Color</a><a href="#type">Typography</a><a href="#ui">Components</a><a href="#status">Status colors</a><a href="#layout">Layout</a><a href="#tokens">Code tokens</a></nav>
+</header>
+
+<section id="brand">
+  <h2>1. Brand</h2>
+  <p class="muted">Personality: <b>reliable, warm, plain-spoken</b>. It feels like a well-kept farm ledger, not enterprise software. Workers use it with dirty hands in bright sun, so clarity beats decoration.</p>
+  <div class="two">
+    <div class="card"><h3 style="margin-top:0">Design principles</h3><ul>
+      <li><b>Fast to record:</b> Common entries in three taps or fewer.</li>
+      <li><b>Big and clear:</b> Large touch targets, large numbers.</li>
+      <li><b>Never ambiguous:</b> Status is always color plus label plus dot.</li>
+      <li><b>Trust the numbers:</b> Show who changed what and when.</li></ul></div>
+    <div class="card"><h3 style="margin-top:0">Voice</h3><ul class="do">
+      <li>Short, direct sentences: "12 crates added."</li>
+      <li>Everyday words: "eggs", "feed", "crates".</li>
+      <li>Calm errors: "Only 4 crates of Large left. Reduce the amount."</li>
+      <li>No jargon, no exclamation marks in errors.</li></ul></div>
+  </div>
+  <h3>Logo</h3>
+  <p>An egg with a green leaf, paired with the wordmark in Fraunces Bold. Keep clear space equal to the egg's width on all sides. Minimum size: 24px tall. Use the egg alone as the app icon and favicon on a Eggshell or Field Green background. Don't stretch, recolor the egg, or add shadows.</p>
+</section>
+
+<section id="color">
+  <h2>2. Color</h2>
+  <p class="muted">Green means farm and "good". Yolk amber is the highlight and action color for "attention". Both work on the warm Eggshell background.</p>
+  <div class="grid">
+    <div class="card"><div class="sw" style="background:#2F6B3F"></div><b>Field Green</b><span>#2F6B3F · Primary buttons, links, nav</span></div>
+    <div class="card"><div class="sw" style="background:#F2B632"></div><b>Yolk</b><span>#F2B632 · Highlights, key action, focus ring</span></div>
+    <div class="card"><div class="sw" style="background:#FBF7EE"></div><b>Eggshell</b><span>#FBF7EE · Page background</span></div>
+    <div class="card"><div class="sw" style="background:#1F2A22"></div><b>Barn Ink</b><span>#1F2A22 · Text</span></div>
+    <div class="card"><div class="sw" style="background:#C4472F"></div><b>Brick</b><span>#C4472F · Errors, sick, destructive</span></div>
+    <div class="card"><div class="sw" style="background:#2F6F9F"></div><b>Sky</b><span>#2F6F9F · Info, approved</span></div>
+  </div>
+  <p class="small muted">Dark mode uses a deep green-black background (#131914) with a lighter green (#6DBB7F) as primary. Text on Yolk is always Barn Brown (#3A2A00); never white text on Yolk. Body text contrast must meet WCAG AA (4.5:1).</p>
+</section>
+
+<section id="type">
+  <h2>3. Typography</h2>
+  <div class="two">
+    <div class="card"><div class="small muted">Headings and big numbers</div><div style="font:700 30px Fraunces,Georgia,serif">Fraunces Bold</div><p class="small muted">A warm serif that gives the app character. Fallback: Georgia.</p></div>
+    <div class="card"><div class="small muted">Body, forms, tables</div><div style="font:600 26px Inter,sans-serif">Inter</div><p class="small muted">Highly readable at small sizes on phones. Fallback: system-ui.</p></div>
+  </div>
+  <div class="scroll"><table>
+    <tr><th>Style</th><th>Font</th><th>Size / weight</th></tr>
+    <tr><td>Page title</td><td>Fraunces</td><td>28px / 700</td></tr>
+    <tr><td>Section title</td><td>Fraunces</td><td>20px / 600</td></tr>
+    <tr><td>Big stat number</td><td>Fraunces</td><td>34px / 700</td></tr>
+    <tr><td>Body</td><td>Inter</td><td>16px / 400 (never below 14px)</td></tr>
+    <tr><td>Label, table header</td><td>Inter</td><td>14px / 600</td></tr>
+  </table></div>
+</section>
+
+<section id="ui">
+  <h2>4. Components</h2>
+  <h3>Buttons (min height 44px)</h3>
+  <div class="row"><span class="btn b-p">Save entry</span><span class="btn b-a">Record eggs</span><span class="btn b-s">Cancel</span><span class="btn b-d">Remove birds</span></div>
+  <p class="small muted">One primary button per screen. Yolk is for the fastest daily action (recording). Destructive actions use Brick and always ask for confirmation and a reason.</p>
+  <h3>Form field (48px tall, 16px text)</h3>
+  <div class="card" style="max-width:360px">
+    <label for="q">Crates of Large eggs</label><input id="q" type="number" inputmode="numeric" placeholder="0" value="12">
+    <p class="small muted">Use number keypads on phones. Show helper text under the field, errors in Brick.</p>
+  </div>
+  <h3>Stat card</h3>
+  <div class="grid">
+    <div class="card"><div class="small muted">Laying hens</div><div class="stat">420</div><span class="badge g">Healthy</span></div>
+    <div class="card"><div class="small muted">Feed left</div><div class="stat">18 bags</div><span class="badge y">About 6 days</span></div>
+    <div class="card"><div class="small muted">Large eggs</div><div class="stat">36 crates</div><span class="badge n">2 loose</span></div>
+  </div>
+  <h3>Table row (orders)</h3>
+  <div class="scroll"><table>
+    <tr><th>Order</th><th>Customer</th><th>Items</th><th>Status</th></tr>
+    <tr><td>#1042</td><td>Mrs. Adeyemi</td><td>10 Large</td><td><span class="badge y">Pending</span></td></tr>
+    <tr><td>#1041</td><td>Fresh Mart</td><td>25 Medium</td><td><span class="badge g">Sold</span></td></tr>
+  </table></div>
+  <h3>Sync indicator (offline support)</h3>
+  <div class="row"><span class="badge g">Online</span><span class="badge n">Offline</span><span class="badge y">3 entries waiting to sync</span><span class="badge r">Needs review</span></div>
+</section>
+
+<section id="status">
+  <h2>5. Status colors</h2>
+  <p class="muted">Always show status as color plus dot plus text, never color alone, so it works for color-blind users and in bright sunlight.</p>
+  <div class="two">
+    <div class="card"><h3 style="margin-top:0">Birds</h3><div class="row"><span class="badge g">Well</span><span class="badge r">Sick</span><span class="badge y">Laying</span><span class="badge n">Non-laying</span><span class="badge b">Chicks</span></div></div>
+    <div class="card"><h3 style="margin-top:0">Orders</h3><div class="row"><span class="badge y">Pending</span><span class="badge b">Approved</span><span class="badge g">Sold</span><span class="badge n">Cancelled</span></div></div>
+    <div class="card"><h3 style="margin-top:0">Stock</h3><div class="row"><span class="badge g">In stock</span><span class="badge y">Low</span><span class="badge r">Out</span></div></div>
+    <div class="card"><h3 style="margin-top:0">Roles</h3><div class="row"><span class="badge g">Owner</span><span class="badge b">Manager</span><span class="badge n">Worker</span></div></div>
+  </div>
+</section>
+
+<section id="layout">
+  <h2>6. Layout, spacing and icons</h2>
+  <ul>
+    <li><b>Spacing scale:</b> 4, 8, 12, 16, 24, 32, 48px. Nothing else.</li>
+    <li><b>Radius:</b> 10px for buttons and fields, 14px for cards, full for badges.</li>
+    <li><b>Mobile first:</b> Single column on phones with a bottom navigation bar (Dashboard, Birds, Eggs, Feed, Orders). Sidebar on desktop, with Stats and Users added.</li>
+    <li><b>Touch targets:</b> 44px minimum, 12px gaps between them.</li>
+    <li><b>Icons:</b> Lucide, 24px, 2px stroke, always paired with a text label in navigation.</li>
+    <li><b>Shadows:</b> Almost none. Use 1px borders (Line color) to separate cards.</li>
+    <li><b>Charts:</b> Green for main series, Yolk for comparison, Brick only for problems (mortality, losses). Label lines directly and avoid legends where possible.</li>
+    <li><b>Role visibility:</b> Hide actions a role can't use (for example, no "Mark as Sold" for workers) rather than showing disabled buttons.</li>
+    <li><b>Empty states:</b> A short friendly line and one button, e.g. "No orders yet. Add the first one."</li>
+  </ul>
+</section>
+
+<section id="tokens">
+  <h2>7. Code tokens</h2>
+  <p class="muted">Paste these into your existing template so every screen uses the same values.</p>
+  <h3>CSS variables</h3>
+  <pre>:root{
+  --bg:#FBF7EE; --surface:#FFFFFF; --ink:#1F2A22; --muted:#5E6B62; --line:#E6DFCC;
+  --primary:#2F6B3F; --on-primary:#FFFFFF; --primary-soft:#E3EFE5;
+  --accent:#F2B632; --on-accent:#3A2A00; --accent-soft:#FCF0D2;
+  --danger:#C4472F; --danger-soft:#F8E1DB;
+  --info:#2F6F9F; --info-soft:#DDEBF5; --neutral-soft:#ECE8DC;
+  --radius-field:10px; --radius-card:14px;
+}
+.dark{
+  --bg:#131914; --surface:#1B231D; --ink:#EEF0E6; --muted:#A3AFA5; --line:#2C382F;
+  --primary:#6DBB7F; --on-primary:#0F1A12; --primary-soft:#22352A;
+  --accent-soft:#3A3120; --danger:#EE8A74; --danger-soft:#3C2620;
+  --info:#7DB6E0; --info-soft:#1F3040; --neutral-soft:#262E28;
+}</pre>
+  <h3>Tailwind config (if your template uses Tailwind)</h3>
+  <pre>theme: { extend: {
+  colors: {
+    field: { DEFAULT:'#2F6B3F', soft:'#E3EFE5' },
+    yolk:  { DEFAULT:'#F2B632', soft:'#FCF0D2', ink:'#3A2A00' },
+    eggshell:'#FBF7EE', barn:'#1F2A22',
+    brick: { DEFAULT:'#C4472F', soft:'#F8E1DB' },
+    sky:   { DEFAULT:'#2F6F9F', soft:'#DDEBF5' },
+  },
+  fontFamily: {
+    heading:['Fraunces','Georgia','serif'],
+    sans:['Inter','system-ui','sans-serif'],
+  },
+  borderRadius: { field:'10px', card:'14px' },
+}}</pre>
+  <h3>Prompt to give your AI coding tool</h3>
+  <pre>Apply the FlockLedger design system to the existing app: use the CSS variables
+and Tailwind colors above, Fraunces for headings and big numbers, Inter for
+everything else. Buttons and inputs are at least 44px tall. Status is always
+shown as a badge with a dot, color and text. Mobile first with a bottom nav.
+Support light and dark mode. Do not change any logic or data code.</pre>
+</section>
+</main>
+</body>
+</html>

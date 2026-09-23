@@ -1,5 +1,8 @@
+import type { SharedProps } from '@adonisjs/inertia/types'
+import { Head, router, useForm } from '@inertiajs/react'
+import { Plus, Trash2 } from 'lucide-react'
 import type { RawBlogCategory } from '#types/model-types'
-import { DataTable, type Column } from '@/components/dashboard/data-table'
+import { type Column, DataTable } from '@/components/dashboard/data-table'
 import { DashboardLayout } from '@/components/dashboard/layout'
 import { PageHeader } from '@/components/dashboard/page_header'
 import { AppCard } from '@/components/ui/app-card'
@@ -9,39 +12,35 @@ import { FormField } from '@/components/ui/form_field'
 import { Input } from '@/components/ui/input'
 import { Stack } from '@/components/ui/stack'
 import { Textarea } from '@/components/ui/textarea'
-import type { SharedProps } from '@adonisjs/inertia/types'
-import { Head, router, useForm } from '@inertiajs/react'
-import { Plus, Trash2 } from 'lucide-react'
 
 const categoryColumns: Column<RawBlogCategory>[] = [
   {
     key: 'name',
     header: 'Name',
-    cell: (row: RawBlogCategory) => <div className="font-medium">{row.name}</div>,
+    cell: (row: RawBlogCategory) => <div className='font-medium'>{row.name}</div>,
   },
   {
     key: 'slug',
     header: 'Slug',
-    cell: (row: RawBlogCategory) => <div className="text-muted-foreground">/{row.slug}</div>,
+    cell: (row: RawBlogCategory) => <div className='text-muted-foreground'>/{row.slug}</div>,
   },
   {
     key: 'actions',
     header: 'Actions',
     cell: (row: RawBlogCategory) => (
-      <div className="text-right">
+      <div className='text-right'>
         <Button
-          variant="ghost"
-          size="icon"
-          className="text-destructive hover:text-destructive"
+          variant='ghost'
+          size='icon'
+          className='text-destructive hover:text-destructive'
           onClick={() => {
             if (
               !confirm('Delete this category? Posts will keep working (category will be cleared).')
             )
               return
             router.delete(`/admin/blog/categories/${row.id}`, { preserveScroll: true })
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
+          }}>
+          <Trash2 className='h-4 w-4' />
         </Button>
       </div>
     ),

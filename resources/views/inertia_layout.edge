@@ -3,16 +3,20 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2F6B3F">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Farmco">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/farmco-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/farmco-icon.svg">
 
-  <title inertia>Starter</title>
-
- 
+  <title inertia>Farmco</title>
 
   @stack('dumper')
   @viteReactRefresh()
   @inertiaHead()
-  @vite(['resources/css/app.css', 'inertia/app/app.tsx', `inertia/pages/${page.component}.tsx`])
+  @vite(['resources/css/app.css', 'inertia/app/app.tsx'])
 </head>
 
 <body class="min-h-screen w-screen font-sans">

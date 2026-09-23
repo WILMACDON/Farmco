@@ -1,5 +1,8 @@
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { LogOut, Monitor, Smartphone, Tablet, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 import type { RawSession } from '#types/model-types'
-import { DataTable, type Column } from '@/components/dashboard/data-table'
+import { type Column, DataTable } from '@/components/dashboard/data-table'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { BaseDialog } from '@/components/ui/base-dialog'
@@ -8,18 +11,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LoadingCard } from '@/components/ui/loading'
 import { dateTimeFormatter, timeAgo } from '@/lib/date'
 import api from '@/lib/http'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { LogOut, Monitor, Smartphone, Tablet, Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
 
 function getDeviceIcon(deviceType: string | null) {
   switch (deviceType) {
     case 'mobile':
-      return <Smartphone className="h-4 w-4" />
+      return <Smartphone className='h-4 w-4' />
     case 'tablet':
-      return <Tablet className="h-4 w-4" />
+      return <Tablet className='h-4 w-4' />
     default:
-      return <Monitor className="h-4 w-4" />
+      return <Monitor className='h-4 w-4' />
   }
 }
 
@@ -34,27 +34,27 @@ interface SessionRow {
   createdAt: string
 }
 
-function getSessionColumns(
+function _getSessionColumns(
   revokeSession: (id: string) => void,
-  isRevoking: boolean
+  isRevoking: boolean,
 ): Column<SessionRow>[] {
   return [
     {
       key: 'device',
       header: 'Device',
       cell: (row) => (
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-muted rounded-full">{getDeviceIcon(row.deviceType)}</div>
+        <div className='flex items-center gap-3'>
+          <div className='p-2 bg-muted rounded-full'>{getDeviceIcon(row.deviceType)}</div>
           <div>
-            <div className="font-medium flex items-center gap-2">
+            <div className='font-medium flex items-center gap-2'>
               {row.browserOs}
               {row.isCurrent && (
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant='secondary' className='text-xs'>
                   Current
                 </Badge>
               )}
             </div>
-            <div className="text-sm text-muted-foreground">{row.ipAddress}</div>
+            <div className='text-sm text-muted-foreground'>{row.ipAddress}</div>
           </div>
         </div>
       ),
@@ -63,7 +63,7 @@ function getSessionColumns(
       key: 'lastActivity',
       header: 'Last Active',
       cell: (row) => (
-        <div className="text-sm text-muted-foreground">
+        <div className='text-sm text-muted-foreground'>
           {row.isCurrent ? 'Now' : timeAgo(row.lastActivity)}
         </div>
       ),
@@ -73,15 +73,14 @@ function getSessionColumns(
       header: 'Actions',
       cell: (row) =>
         !row.isCurrent && (
-          <div className="flex justify-end">
+          <div className='flex justify-end'>
             <Button
-              variant="ghost"
-              size="icon"
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              variant='ghost'
+              size='icon'
+              className='text-destructive hover:text-destructive hover:bg-destructive/10'
               disabled={isRevoking}
-              onClick={() => revokeSession(row.id)}
-            >
-              <Trash2 className="h-4 w-4" />
+              onClick={() => revokeSession(row.id)}>
+              <Trash2 className='h-4 w-4' />
             </Button>
           </div>
         ),
@@ -224,9 +223,7 @@ export function SessionsTab() {
                 key: 'lastActivity',
                 header: 'Last active',
                 cell: (row: SessionRow) => (
-                  <div className='text-sm text-muted-foreground'>
-                    {timeAgo(row.lastActivity)}
-                  </div>
+                  <div className='text-sm text-muted-foreground'>{timeAgo(row.lastActivity)}</div>
                 ),
               },
               {
@@ -253,8 +250,7 @@ export function SessionsTab() {
                           variant='ghost'
                           size='icon'
                           disabled={isRevoking}
-                          className='text-destructive hover:text-destructive'
-                        >
+                          className='text-destructive hover:text-destructive'>
                           <Trash2 className='h-4 w-4' />
                         </Button>
                       }

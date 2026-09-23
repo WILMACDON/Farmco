@@ -1,13 +1,12 @@
 import hash from '@adonisjs/core/services/hash'
-import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 
 import User from '#models/user'
+import { resetDatabase } from '#tests/helpers/farm'
 
 test.group('User Model', (group) => {
   group.each.setup(async () => {
-    await testUtils.db().truncate()
-    group.each.setup(() => testUtils.db().withGlobalTransaction())
+    await resetDatabase()
   })
 
   test('should hash user password when creating a new user', async ({ assert }) => {

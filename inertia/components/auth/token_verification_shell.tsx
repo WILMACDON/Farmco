@@ -120,8 +120,12 @@ export function TokenVerificationShell({
               {isError ? errorTitle : null}
             </CardTitle>
             <CardDescription className='text-base'>
-              {isPending ? <span className='text-muted-foreground'>{pendingDescription}</span> : null}
-              {isSuccess ? <span className='text-green-600 dark:text-green-400'>{successDescription}</span> : null}
+              {isPending ? (
+                <span className='text-muted-foreground'>{pendingDescription}</span>
+              ) : null}
+              {isSuccess ? (
+                <span className='text-green-600 dark:text-green-400'>{successDescription}</span>
+              ) : null}
               {isError ? <span className='text-destructive'>{errorMessage}</span> : null}
             </CardDescription>
           </CardHeader>
@@ -185,4 +189,3 @@ export function TokenVerificationShell({
     </div>
   )
 }
-

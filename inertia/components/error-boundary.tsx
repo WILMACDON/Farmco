@@ -1,10 +1,9 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Link } from '@inertiajs/react'
 import { AlertCircle, Home, RefreshCw } from 'lucide-react'
 import { Component, type ReactNode } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface ErrorBoundaryProps {
   children: ReactNode

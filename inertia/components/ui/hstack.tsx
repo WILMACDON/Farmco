@@ -10,7 +10,15 @@ export interface HStackProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const HStack = React.forwardRef<HTMLDivElement, HStackProps>(
   (
-    { className, spacing = 4, align = 'center', justify = 'start', wrap = false, children, ...props },
+    {
+      className,
+      spacing = 4,
+      align = 'center',
+      justify = 'start',
+      wrap = false,
+      children,
+      ...props
+    },
     ref,
   ) => {
     const spacingValue = typeof spacing === 'number' ? `${spacing * 0.25}rem` : spacing

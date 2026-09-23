@@ -9,7 +9,7 @@ import { ErrorBoundary } from '@/components/error-boundary'
 import { Toaster } from '@/components/ui/sonner'
 import { queryClient } from './query'
 
-const appName = import.meta.env.VITE_APP_NAME || 'AdonisJS'
+const appName = import.meta.env.VITE_APP_NAME || 'Farmco'
 
 createInertiaApp({
   progress: { color: '#5468FF' },

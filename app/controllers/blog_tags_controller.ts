@@ -20,4 +20,3 @@ export default class BlogTagsController {
     return response.redirect('/blog/admin/tags')
   }
 }
-

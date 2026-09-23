@@ -1,3 +1,6 @@
+import type { SharedProps } from '@adonisjs/inertia/types'
+import { Head, router, useForm } from '@inertiajs/react'
+import { Plus, Trash2 } from 'lucide-react'
 import type { RawBlogAuthor } from '#types/model-types'
 import type { Column } from '@/components/dashboard/data-table'
 import { DataTable } from '@/components/dashboard/data-table'
@@ -11,9 +14,6 @@ import { Input } from '@/components/ui/input'
 import { SimpleGrid } from '@/components/ui/simplegrid'
 import { Stack } from '@/components/ui/stack'
 import { Textarea } from '@/components/ui/textarea'
-import type { SharedProps } from '@adonisjs/inertia/types'
-import { Head, router, useForm } from '@inertiajs/react'
-import { Plus, Trash2 } from 'lucide-react'
 
 interface BlogAdminAuthorsProps extends SharedProps {
   authors: RawBlogAuthor[]

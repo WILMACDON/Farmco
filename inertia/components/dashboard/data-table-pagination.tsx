@@ -101,7 +101,9 @@ export function DataTablePagination({
               {pageNumbers.map((p, idx) => {
                 if (p === '...') {
                   return (
-                    <span key={`ellipsis-${page}-${idx}`} className='px-2 text-muted-foreground'>
+                    <span
+                      key={`ellipsis-${String(p)}-${idx}`}
+                      className='px-2 text-muted-foreground'>
                       ...
                     </span>
                   )

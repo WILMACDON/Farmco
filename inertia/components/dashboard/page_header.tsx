@@ -18,8 +18,7 @@ export function PageHeader({ title, description, backHref, actions, className }:
       className={cn(
         'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between',
         className,
-      )}
-    >
+      )}>
       <div className='flex items-center gap-4 min-w-0'>
         {backHref ? (
           <Button variant='ghost' size='icon' asChild>
@@ -39,4 +38,3 @@ export function PageHeader({ title, description, backHref, actions, className }:
     </div>
   )
 }
-

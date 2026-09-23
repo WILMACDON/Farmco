@@ -23,11 +23,11 @@ export default class SessionsController {
           lastActivity:
             lastActivity && typeof lastActivity.toISO === 'function'
               ? lastActivity.toISO()
-              : lastActivity ?? null,
+              : (lastActivity ?? null),
           createdAt:
             createdAt && typeof createdAt.toISO === 'function'
               ? createdAt.toISO()
-              : createdAt ?? null,
+              : (createdAt ?? null),
         }
       }),
     })

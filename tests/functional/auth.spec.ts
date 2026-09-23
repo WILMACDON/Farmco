@@ -1,14 +1,13 @@
-import testUtils from '@adonisjs/core/services/test_utils'
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 
 import PasswordReset from '#models/password_reset'
 import User from '#models/user'
+import { resetDatabase } from '#tests/helpers/farm'
 
 test.group('Auth', (group) => {
   group.each.setup(async () => {
-    await testUtils.db().truncate()
-    // group.each.setup(() => testUtils.db().withGlobalTransaction())
+    await resetDatabase()
   })
 
   test('should sign up a new user successfully', async ({ client, assert }) => {
@@ -16,20 +15,31 @@ test.group('Auth', (group) => {
       .post('/api/v1/auth/signup')
       .json({
         fullName: 'John Doe',
+        organizationName: 'Greenfield Poultry',
         email: 'john-signup@example.com',
         password: 'password123',
+        confirmPassword: 'password123',
       })
       .withCsrfToken()
 
     response.assertStatus(201)
-    response.assertBodyContains({ message: 'User created successfully' })
+    response.assertBodyContains({
+      message: 'User created successfully. Please check your email to verify your account.',
+    })
 
     const user = await User.findBy('email', 'john-signup@example.com')
     assert.isNotNull(user)
     assert.equal(user?.fullName, 'John Doe')
+
+    const Workspace = (await import('#models/workspace')).default
+    const WorkspaceMember = (await import('#models/workspace_member')).default
+    const membership = await WorkspaceMember.query().where('user_id', user!.id).first()
+    assert.isNotNull(membership)
+    const workspace = await Workspace.find(membership!.workspaceId)
+    assert.equal(workspace?.name, 'Greenfield Poultry')
   })
 
-  test('should not sign up user with existing email', async ({ client, assert }) => {
+  test('should not sign up user with existing email', async ({ client }) => {
     await User.create({
       fullName: 'John Doe',
       email: 'john-duplicate@example.com',
@@ -40,13 +50,15 @@ test.group('Auth', (group) => {
       .post('/api/v1/auth/signup')
       .json({
         fullName: 'Jane Doe',
+        organizationName: 'Another Farm',
         email: 'john-duplicate@example.com',
         password: 'password456',
+        confirmPassword: 'password456',
       })
       .withCsrfToken()
 
     response.assertStatus(409)
-    response.assertBodyContains({ error: 'user already exists' })
+    response.assertBodyContains({ error: 'User already exists' })
   })
 
   test('should validate required fields on signup', async ({ client }) => {
@@ -54,6 +66,7 @@ test.group('Auth', (group) => {
       .post('/api/v1/auth/signup')
       .json({
         fullName: '',
+        organizationName: '',
         email: 'invalid-email',
         password: '',
       })
@@ -184,7 +197,8 @@ test.group('Auth', (group) => {
       })
       .withCsrfToken()
 
-    response.assertStatus(404)
+    response.assertStatus(400)
+    response.assertBodyContains({ error: "There's no account with this email" })
   })
 
   test('should validate email on forgot password', async ({ client }) => {

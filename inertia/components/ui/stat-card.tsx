@@ -1,7 +1,7 @@
+import type { LucideIcon } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { HStack } from '@/components/ui/hstack'
 import { Stack } from '@/components/ui/stack'
-import { type LucideIcon } from 'lucide-react'
 
 interface StatCardProps {
   title: string
@@ -24,7 +24,9 @@ export function StatCard({ title, value, description, icon: Icon, children }: St
         </Stack>
       </CardHeader>
       <CardContent>
-        <div className='text-2xl font-bold'>{value}</div>
+        <div className='font-display text-[34px] font-bold leading-none tracking-tight'>
+          {value}
+        </div>
         {children}
       </CardContent>
     </Card>

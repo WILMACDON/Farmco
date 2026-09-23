@@ -103,8 +103,7 @@ export function InputOtp({
       className={cn('flex items-center gap-2', className)}
       role='group'
       aria-label='One time password'
-      {...props}
-    >
+      {...props}>
       {inputKeys.map((key, index) => (
         <Input
           key={key}
@@ -118,10 +117,7 @@ export function InputOtp({
           autoComplete={index === 0 ? 'one-time-code' : 'off'}
           pattern={allowAlphanumeric ? '[a-zA-Z0-9]*' : '[0-9]*'}
           type='text'
-          className={cn(
-            'w-10 text-center font-mono tracking-widest',
-            inputClassName,
-          )}
+          className={cn('w-10 text-center font-mono tracking-widest', inputClassName)}
           maxLength={1}
           aria-label={`Digit ${index + 1} of ${length}`}
           onFocus={() => focusIndex(index)}
@@ -176,4 +172,3 @@ export function InputOtp({
     </div>
   )
 }
-
