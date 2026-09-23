@@ -1,0 +1,259 @@
+@import "tailwindcss";
+
+/* Distinctive typography: avoid Inter/Roboto/Space Grotesk */
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Outfit:wght@100..900&display=swap");
+
+/* ================================
+   Tailwind v4 Theme Tokens
+   ================================ */
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius: var(--radius);
+
+  /* Charts */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Quick actions */
+  --color-quick-action-blue: var(--quick-action-blue);
+  --color-quick-action-blue-bg: var(--quick-action-blue-bg);
+  --color-quick-action-green: var(--quick-action-green);
+  --color-quick-action-green-bg: var(--quick-action-green-bg);
+  --color-quick-action-orange: var(--quick-action-orange);
+  --color-quick-action-orange-bg: var(--quick-action-orange-bg);
+  --color-quick-action-cyan: var(--quick-action-cyan);
+  --color-quick-action-cyan-bg: var(--quick-action-cyan-bg);
+  --color-quick-action-indigo: var(--quick-action-indigo);
+  --color-quick-action-indigo-bg: var(--quick-action-indigo-bg);
+  --color-quick-action-red: var(--quick-action-red);
+  --color-quick-action-red-bg: var(--quick-action-red-bg);
+
+  /* Sidebar (sidebar = background for bg-sidebar) */
+  --color-sidebar: var(--sidebar-background);
+  --color-sidebar-background: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* ================================
+   Base Layer
+   ================================ */
+@layer base {
+
+  html.dashboard-shell,
+  body.dashboard-shell {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* ================================
+     Light Theme — warm stone + slate (mature, refined)
+     ================================ */
+  :root {
+    /* Core — off-white and warm dark text */
+    --background: #fafaf9;
+    --foreground: #1c1917;
+
+    /* Surfaces — slight warmth */
+    --card: #ffffff;
+    --card-foreground: #1c1917;
+    --popover: #ffffff;
+    --popover-foreground: #1c1917;
+
+    /* Brand — medium slate blue (lighter, still refined) */
+    --primary: #475569;
+    --primary-foreground: #f8fafc;
+    --accent: #f5f5f4;
+    --accent-foreground: #1c1917;
+
+    /* UI — warm grays */
+    --secondary: #f5f5f4;
+    --secondary-foreground: #1c1917;
+    --muted: #f5f5f4;
+    --muted-foreground: #57534e;
+
+    --border: #e7e5e4;
+    --input: #e7e5e4;
+    --ring: #475569;
+
+    --destructive: #b91c1c;
+    --destructive-foreground: #fafaf9;
+
+    --radius: 0.5rem;
+
+    /* Charts */
+    --chart-1: #475569;
+    --chart-2: #334155;
+    --chart-3: #57534e;
+    --chart-4: #a8a29e;
+    --chart-5: #e7e5e4;
+
+    /* Quick actions */
+    --quick-action-blue: #1d4ed8;
+    --quick-action-blue-bg: rgba(59, 130, 246, 0.1);
+    --quick-action-green: #15803d;
+    --quick-action-green-bg: rgba(34, 197, 94, 0.1);
+    --quick-action-orange: #c2410c;
+    --quick-action-orange-bg: rgba(249, 115, 22, 0.1);
+    --quick-action-cyan: #0e7490;
+    --quick-action-cyan-bg: rgba(6, 182, 212, 0.1);
+    --quick-action-indigo: #4338ca;
+    --quick-action-indigo-bg: rgba(99, 102, 241, 0.1);
+    --quick-action-red: #b91c1c;
+    --quick-action-red-bg: rgba(239, 68, 68, 0.1);
+
+    /* Sidebar — light rail, distinct from page but not dark */
+    --sidebar-background: #f5f5f4;
+    --sidebar-foreground: #1c1917;
+    --sidebar-primary: #475569;
+    --sidebar-primary-foreground: #f8fafc;
+    --sidebar-accent: #e7e5e4;
+    --sidebar-accent-foreground: #1c1917;
+    --sidebar-border: #e7e5e4;
+    --sidebar-ring: #475569;
+  }
+
+  /* ================================
+     Dark Theme — soft dark + slate accent (mature, refined)
+     ================================ */
+  .dark {
+    /* Core — soft dark, not pure black */
+    --background: #0f0f0f;
+    --foreground: #fafaf9;
+
+    /* Surfaces */
+    --card: #171717;
+    --card-foreground: #fafaf9;
+    --popover: #171717;
+    --popover-foreground: #fafaf9;
+
+    /* Brand — soft slate so CTAs are visible but not harsh */
+    --primary: #94a3b8;
+    --primary-foreground: #0f172a;
+    --accent: #262626;
+    --accent-foreground: #fafaf9;
+
+    /* UI */
+    --secondary: #262626;
+    --secondary-foreground: #fafaf9;
+    --muted: #262626;
+    --muted-foreground: #a8a29e;
+
+    --border: #404040;
+    --input: #404040;
+    --ring: #94a3b8;
+
+    --destructive: #991b1b;
+    --destructive-foreground: #fafaf9;
+
+    /* Charts */
+    --chart-1: #94a3b8;
+    --chart-2: #64748b;
+    --chart-3: #a8a29e;
+    --chart-4: #525252;
+    --chart-5: #262626;
+
+    /* Quick actions */
+    --quick-action-blue: #60a5fa;
+    --quick-action-blue-bg: rgba(96, 165, 250, 0.12);
+    --quick-action-green: #4ade80;
+    --quick-action-green-bg: rgba(74, 222, 128, 0.12);
+    --quick-action-orange: #fb923c;
+    --quick-action-orange-bg: rgba(251, 146, 60, 0.12);
+    --quick-action-cyan: #22d3ee;
+    --quick-action-cyan-bg: rgba(34, 211, 238, 0.12);
+    --quick-action-indigo: #818cf8;
+    --quick-action-indigo-bg: rgba(129, 140, 248, 0.12);
+    --quick-action-red: #f87171;
+    --quick-action-red-bg: rgba(248, 113, 113, 0.12);
+
+    /* Sidebar — clearly distinct rail (lighter than content, visible edge) */
+    --sidebar-background: #1a1a1a;
+    --sidebar-foreground: #fafaf9;
+    --sidebar-primary: #94a3b8;
+    --sidebar-primary-foreground: #0f172a;
+    --sidebar-accent: #262626;
+    --sidebar-accent-foreground: #fafaf9;
+    --sidebar-border: #333333;
+    --sidebar-ring: #94a3b8;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  /* Subtle depth: soft radial gradient for atmosphere */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 90% 60% at 50% -10%, var(--muted) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.5;
+  }
+}
+
+/* Staggered reveal animation (use with [animation-delay]) */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out both;
+}
