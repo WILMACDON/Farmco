@@ -11,7 +11,7 @@ import router from '@adonisjs/core/services/router'
 import transmit from '@adonisjs/transmit/services/main'
 import AutoSwagger from 'adonis-autoswagger'
 import swagger from '#config/swagger'
-import { OauthService } from '#services/oauth_service'
+// import { OauthService } from '#services/oauth_service'
 import { middleware } from './kernel.js'
 import { throttle } from './limiter.js'
 
@@ -283,58 +283,59 @@ router
 
 router.get('/health', [HealthChecksController])
 
-router
-  .get('/:provider/redirect', ({ ally, params }) => {
-    return ally.use(params.provider).redirect()
-  })
-  .where('provider', /google/)
+// Google OAuth temporarily hidden
+// router
+//   .get('/:provider/redirect', ({ ally, params }) => {
+//     return ally.use(params.provider).redirect()
+//   })
+//   .where('provider', /google/)
 
-async function finishOAuthLogin(
-  user: Awaited<ReturnType<OauthService['createOrLoginWithGoogle']>>,
-  ctx: {
-    auth: import('@adonisjs/core/http').HttpContext['auth']
-    response: import('@adonisjs/core/http').HttpContext['response']
-    session: import('@adonisjs/core/http').HttpContext['session']
-  },
-) {
-  if (user.status === 'inactive') {
-    ctx.session.flash('error', { message: 'This account is inactive.' })
-    return ctx.response.redirect('/login')
-  }
+// async function finishOAuthLogin(
+//   user: Awaited<ReturnType<OauthService['createOrLoginWithGoogle']>>,
+//   ctx: {
+//     auth: import('@adonisjs/core/http').HttpContext['auth']
+//     response: import('@adonisjs/core/http').HttpContext['response']
+//     session: import('@adonisjs/core/http').HttpContext['session']
+//   },
+// ) {
+//   if (user.status === 'inactive') {
+//     ctx.session.flash('error', { message: 'This account is inactive.' })
+//     return ctx.response.redirect('/login')
+//   }
+//
+//   await ctx.auth.use('web').login(user)
+//
+//   if (user.mustChangePassword) {
+//     ctx.session.flash('mustChangePassword', true)
+//     return ctx.response.redirect('/settings?tab=password')
+//   }
+//
+//   return ctx.response.redirect(user.role === 'admin' ? '/admin' : '/dashboard')
+// }
 
-  await ctx.auth.use('web').login(user)
-
-  if (user.mustChangePassword) {
-    ctx.session.flash('mustChangePassword', true)
-    return ctx.response.redirect('/settings?tab=password')
-  }
-
-  return ctx.response.redirect(user.role === 'admin' ? '/admin' : '/dashboard')
-}
-
-router.get('/google/callback', async ({ ally, auth, response, session }) => {
-  const google = ally.use('google')
-
-  if (google.accessDenied()) {
-    session.flash('error', { message: 'You have cancelled the login process' })
-    return response.redirect('/login')
-  }
-
-  if (google.stateMisMatch()) {
-    session.flash('error', { message: 'We are unable to verify the request. Please try again' })
-    return response.redirect('/login')
-  }
-
-  if (google.hasError()) {
-    session.flash('error', { message: google.getError() })
-    return response.redirect('/login')
-  }
-
-  const googleUser = await google.user()
-  // @ts-expect-error - GoogleUser is the same as the type in the GoogleService
-  const user = await new OauthService().createOrLoginWithGoogle(googleUser)
-  return finishOAuthLogin(user, { auth, response, session })
-})
+// router.get('/google/callback', async ({ ally, auth, response, session }) => {
+//   const google = ally.use('google')
+//
+//   if (google.accessDenied()) {
+//     session.flash('error', { message: 'You have cancelled the login process' })
+//     return response.redirect('/login')
+//   }
+//
+//   if (google.stateMisMatch()) {
+//     session.flash('error', { message: 'We are unable to verify the request. Please try again' })
+//     return response.redirect('/login')
+//   }
+//
+//   if (google.hasError()) {
+//     session.flash('error', { message: google.getError() })
+//     return response.redirect('/login')
+//   }
+//
+//   const googleUser = await google.user()
+//   // @ts-expect-error - GoogleUser is the same as the type in the GoogleService
+//   const user = await new OauthService().createOrLoginWithGoogle(googleUser)
+//   return finishOAuthLogin(user, { auth, response, session })
+// })
 transmit.registerRoutes()
 
 router.get('/swagger', async () => {

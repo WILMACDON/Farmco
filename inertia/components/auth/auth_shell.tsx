@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react'
+import { Head, Link } from '@inertiajs/react'
 import { AppLogo } from '@/components/app_logo'
 import { PublicLayout } from '@/components/layouts/public'
 import { cn } from '@/lib/utils'
@@ -38,7 +38,9 @@ export function AuthShell({
             aria-hidden
           />
           <div className='relative flex h-full flex-col justify-between p-10'>
-            <AppLogo className='[&_span]:text-primary-foreground' />
+            <Link href='/' className='w-fit'>
+              <AppLogo className='[&_span]:text-primary-foreground' />
+            </Link>
             <p className='font-display max-w-sm text-2xl font-semibold leading-snug text-primary-foreground'>
               {panelLine}
             </p>
@@ -52,7 +54,9 @@ export function AuthShell({
               'rounded-2xl border border-border bg-card p-6 shadow-lg shadow-black/5',
             )}>
             <div className='flex justify-center lg:hidden'>
-              <AppLogo />
+              <Link href='/' className='w-fit'>
+                <AppLogo />
+              </Link>
             </div>
 
             <div className='space-y-1 text-center'>

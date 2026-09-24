@@ -82,24 +82,6 @@ export default function Login({ errors }: LoginProps) {
         </Alert>
       ) : null}
 
-      <div className='grid grid-cols-1 gap-3'>
-        <a href='/google/redirect'>
-          <Button type='button' variant='outline' disabled={processing} className='w-full'>
-            <img src='/icons/google.svg' alt='Google' className='h-4 w-4' />
-            Continue with Google
-          </Button>
-        </a>
-      </div>
-
-      <div className='relative'>
-        <div className='absolute inset-0 flex items-center'>
-          <span className='w-full border-t' />
-        </div>
-        <div className='relative flex justify-center text-xs uppercase'>
-          <span className='bg-card px-2 text-muted-foreground'>Or</span>
-        </div>
-      </div>
-
       <form onSubmit={handleSubmit} className='space-y-4'>
         <div className='space-y-2'>
           <Label htmlFor='email'>Email</Label>
