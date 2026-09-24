@@ -1,6 +1,8 @@
 import { DateTime } from 'luxon'
 import ActivityLog from '#models/activity_log'
+import FarmOrder from '#models/farm_order'
 import type { Transaction } from '#types/extra'
+import { formatOrderRef } from '#utils/order_ref'
 import type { FarmRole } from '#utils/farm_permissions'
 
 export interface LogActivityOptions {
@@ -91,8 +93,36 @@ export class ActivityLogService {
     }
 
     const page = await query.paginate(filters.page ?? 1, filters.perPage ?? 50)
-    const json = page.toJSON()
-    return { entries: json.data, meta: json.meta }
+    const rows = page.all()
+
+    const orderIds = [
+      ...new Set(
+        rows
+          .filter((entry) => entry.entity === 'order' && entry.entityId)
+          .map((entry) => entry.entityId as string),
+      ),
+    ]
+
+    const orderRefs = new Map<string, string>()
+    if (orderIds.length > 0) {
+      const orders = await FarmOrder.query().whereIn('id', orderIds).select('id', 'order_number')
+      for (const order of orders) {
+        orderRefs.set(order.id, formatOrderRef(order.orderNumber))
+      }
+    }
+
+    const entries = rows.map((entry) => {
+      const serialized = entry.serialize()
+      return {
+        ...serialized,
+        entityLabel:
+          entry.entity === 'order' && entry.entityId
+            ? (orderRefs.get(entry.entityId) ?? null)
+            : null,
+      }
+    })
+
+    return { entries, meta: page.getMeta() }
   }
 }
 

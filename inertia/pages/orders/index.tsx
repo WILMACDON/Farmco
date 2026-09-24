@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Check, EllipsisVertical, Pencil, Plus, ShoppingBag, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import { DashboardLayout } from '@/components/dashboard/layout'
 import { PageHeader } from '@/components/dashboard/page_header'
@@ -16,6 +16,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { FormField } from '@/components/ui/form_field'
 import { Input } from '@/components/ui/input'
 import {
@@ -25,7 +32,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { farmMutate, formatDate, formatDateTime, formatEggSize, formatNumber } from '@/lib/farm-api'
+import {
+  farmMutate,
+  formatDate,
+  formatDateTime,
+  formatEggSize,
+  formatNumber,
+  formatOrderRef,
+} from '@/lib/farm-api'
 
 type OrderStatus = 'pending' | 'approved' | 'sold' | 'cancelled'
 type EggSize = 'small' | 'medium' | 'large'
@@ -39,6 +53,7 @@ interface OrderItem {
 
 interface FarmOrder {
   id: string
+  orderNumber: number
   customerName: string
   contact: string | null
   status: OrderStatus
@@ -248,7 +263,7 @@ export default function OrdersPage({
                 className='min-h-11'
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder='Customer name'
+                placeholder='Customer or ORD-12'
               />
             </FormField>
             <FormField label='Status' className='sm:w-44'>
@@ -281,87 +296,135 @@ export default function OrdersPage({
           {orders.length === 0 ? (
             <p className='text-sm text-muted-foreground'>No orders match these filters.</p>
           ) : (
-            <div className='space-y-4'>
-              {orders.map((order) => {
-                const crates = (order.items ?? []).reduce((sum, i) => sum + i.crates, 0)
-                const editable = canEditOrder(order.status)
-                return (
-                  <div key={order.id} className='rounded-card border border-border p-4'>
-                    <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-                      <div className='space-y-1'>
-                        <div className='flex flex-wrap items-center gap-2'>
-                          <p className='font-medium'>{order.customerName}</p>
+            <div className='overflow-x-auto'>
+              <table className='w-full min-w-[800px] text-sm'>
+                <thead>
+                  <tr className='border-b border-border text-left text-muted-foreground'>
+                    <th className='pb-2 pr-3 font-medium'>Order</th>
+                    <th className='pb-2 pr-3 font-medium'>Customer</th>
+                    <th className='pb-2 pr-3 font-medium'>Status</th>
+                    <th className='pb-2 pr-3 font-medium'>Items</th>
+                    <th className='pb-2 pr-3 font-medium'>Crates</th>
+                    <th className='pb-2 pr-3 font-medium'>Ordered</th>
+                    <th className='pb-2 pr-3 font-medium'>Due</th>
+                    <th className='pb-2 w-12 font-medium'>
+                      <span className='sr-only'>Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => {
+                    const crates = (order.items ?? []).reduce((sum, i) => sum + i.crates, 0)
+                    const editable = canEditOrder(order.status)
+                    const canApprovePending = canApprove && order.status === 'pending'
+                    const canMarkSold = canApprove && order.status === 'approved'
+                    const canCancel =
+                      canApprove && (order.status === 'pending' || order.status === 'approved')
+                    const hasActions = editable || canApprovePending || canMarkSold || canCancel
+                    const isBusy = busyId === order.id
+
+                    return (
+                      <tr key={order.id} className='border-b border-border/70 align-middle'>
+                        <td className='py-3 pr-3 whitespace-nowrap'>
+                          <span className='font-display font-semibold text-primary'>
+                            {formatOrderRef(order.orderNumber)}
+                          </span>
+                          {order.recurringInterval ? (
+                            <span className='mt-1 block text-xs text-muted-foreground'>
+                              {recurringLabels[order.recurringInterval]}
+                            </span>
+                          ) : null}
+                        </td>
+                        <td className='py-3 pr-3'>
+                          <span className='font-medium'>{order.customerName}</span>
+                          {order.contact ? (
+                            <span className='mt-1 block text-xs text-muted-foreground'>
+                              {order.contact}
+                            </span>
+                          ) : null}
+                        </td>
+                        <td className='py-3 pr-3'>
                           <StatusBadge status={order.status} />
-                          {order.recurringInterval && (
-                            <StatusBadge
-                              status={order.recurringInterval}
-                              label={recurringLabels[order.recurringInterval]}
-                              tone='info'
-                            />
-                          )}
-                        </div>
-                        <p className='text-sm text-muted-foreground'>
-                          {formatDateTime(order.orderDate)}
-                          {order.contact ? ` · ${order.contact}` : ''}
-                          {` · ${formatNumber(crates)} crates`}
-                          {order.deliveryDate ? ` · Due ${formatDate(order.deliveryDate)}` : ''}
-                        </p>
-                        <p className='text-sm'>
+                        </td>
+                        <td className='py-3 pr-3 max-w-[200px]'>
                           {(order.items ?? [])
                             .map((i) => `${formatEggSize(i.size)} × ${i.crates}`)
-                            .join(' · ') || 'No items'}
-                        </p>
-                      </div>
-                      <div className='flex flex-wrap gap-2'>
-                        {editable && (
-                          <Button
-                            variant='outline'
-                            className='min-h-11'
-                            leftIcon={<Pencil className='h-4 w-4' />}
-                            disabled={busyId === order.id}
-                            onClick={() => openEdit(order)}>
-                            Edit
-                          </Button>
-                        )}
-                        {canApprove && order.status === 'pending' && (
-                          <>
-                            <Button
-                              className='min-h-11'
-                              isLoading={busyId === order.id}
-                              onClick={() => runOrderAction(order.id, 'approve')}>
-                              Approve
-                            </Button>
-                            <Button
-                              variant='outline'
-                              className='min-h-11'
-                              disabled={busyId === order.id}
-                              onClick={() => runOrderAction(order.id, 'cancel')}>
-                              Cancel
-                            </Button>
-                          </>
-                        )}
-                        {canApprove && order.status === 'approved' && (
-                          <>
-                            <Button
-                              className='min-h-11 bg-accent text-accent-foreground hover:bg-accent/90'
-                              isLoading={busyId === order.id}
-                              onClick={() => runOrderAction(order.id, 'sold')}>
-                              Mark sold
-                            </Button>
-                            <Button
-                              variant='outline'
-                              className='min-h-11'
-                              disabled={busyId === order.id}
-                              onClick={() => runOrderAction(order.id, 'cancel')}>
-                              Cancel
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+                            .join(', ') || '—'}
+                        </td>
+                        <td className='py-3 pr-3 whitespace-nowrap'>{formatNumber(crates)}</td>
+                        <td className='py-3 pr-3 text-muted-foreground whitespace-nowrap'>
+                          {formatDateTime(order.orderDate)}
+                        </td>
+                        <td className='py-3 pr-3 text-muted-foreground whitespace-nowrap'>
+                          {order.deliveryDate ? formatDate(order.deliveryDate) : '—'}
+                        </td>
+                        <td className='py-3'>
+                          {hasActions ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant='ghost'
+                                  size='icon'
+                                  className='min-h-11 min-w-11'
+                                  disabled={isBusy}
+                                  aria-label={`Actions for ${formatOrderRef(order.orderNumber)}`}>
+                                  <EllipsisVertical className='h-4 w-4' />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align='end' className='min-w-44'>
+                                {editable && (
+                                  <DropdownMenuItem
+                                    className='cursor-pointer gap-2'
+                                    disabled={isBusy}
+                                    onClick={() => openEdit(order)}>
+                                    <Pencil className='size-4' />
+                                    Edit
+                                  </DropdownMenuItem>
+                                )}
+                                {canApprovePending && (
+                                  <DropdownMenuItem
+                                    className='cursor-pointer gap-2'
+                                    disabled={isBusy}
+                                    onClick={() => runOrderAction(order.id, 'approve')}>
+                                    <Check className='size-4' />
+                                    Approve
+                                  </DropdownMenuItem>
+                                )}
+                                {canMarkSold && (
+                                  <DropdownMenuItem
+                                    className='cursor-pointer gap-2'
+                                    disabled={isBusy}
+                                    onClick={() => runOrderAction(order.id, 'sold')}>
+                                    <ShoppingBag className='size-4' />
+                                    Mark sold
+                                  </DropdownMenuItem>
+                                )}
+                                {canCancel && (
+                                  <>
+                                    {(editable || canApprovePending || canMarkSold) && (
+                                      <DropdownMenuSeparator />
+                                    )}
+                                    <DropdownMenuItem
+                                      variant='destructive'
+                                      className='cursor-pointer gap-2'
+                                      disabled={isBusy}
+                                      onClick={() => runOrderAction(order.id, 'cancel')}>
+                                      <X className='size-4' />
+                                      Cancel
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : (
+                            <span className='text-muted-foreground'>—</span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
 

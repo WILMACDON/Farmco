@@ -109,6 +109,12 @@ export function formatEggSize(size: string) {
   return size.charAt(0).toUpperCase() + size.slice(1)
 }
 
+/** Per-workspace sequential order display id, e.g. ORD-12 */
+export function formatOrderRef(orderNumber: number | null | undefined) {
+  if (orderNumber == null || !Number.isFinite(orderNumber)) return null
+  return `ORD-${orderNumber}`
+}
+
 export function formatDateTime(value: string | null | undefined) {
   if (!value) return '—'
   const date = new Date(value)

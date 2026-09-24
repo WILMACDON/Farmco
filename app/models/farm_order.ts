@@ -18,6 +18,10 @@ export default class FarmOrder extends SuperBaseModel {
   @column()
   declare workspaceId: string
 
+  /** Per-workspace sequential display number (shown as ORD-{n}). */
+  @column()
+  declare orderNumber: number
+
   @column()
   declare customerName: string
 

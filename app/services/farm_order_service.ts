@@ -12,6 +12,8 @@ import Workspace from '#models/workspace'
 import activityLogService from '#services/activity_log_service'
 import eggInventoryService from '#services/egg_inventory_service'
 import FarmCacheService from '#services/farm_cache_service'
+import type { Transaction } from '#types/extra'
+import { formatOrderRef } from '#utils/order_ref'
 import type { FarmRole } from '#utils/farm_permissions'
 
 export interface CreateOrderInput {
@@ -48,6 +50,17 @@ function advanceDueDate(base: DateTime, interval: OrderRecurringInterval): DateT
 }
 
 export class FarmOrderService {
+  /** Next ORD-n for a workspace; caller must hold a transaction. */
+  private async allocateOrderNumber(workspaceId: string, trx: Transaction) {
+    await Workspace.query({ client: trx }).where('id', workspaceId).forUpdate().firstOrFail()
+    const result = await db
+      .from('orders')
+      .useTransaction(trx)
+      .where('workspace_id', workspaceId)
+      .max('order_number as max')
+      .first()
+    return Number(result?.max ?? 0) + 1
+  }
   async list(workspaceId: string, filters: OrderListFilters = {}, _farmRole?: FarmRole) {
     const query = FarmOrder.query()
       .where('workspace_id', workspaceId)
@@ -64,9 +77,11 @@ export class FarmOrderService {
     if (to) query.where('order_date', '<=', to.toSQL()!)
 
     if (filters.search) {
-      const term = `%${filters.search}%`
+      const term = filters.search.trim()
+      const ordMatch = term.match(/^(?:ORD-?)?(\d+)$/i)
       query.where((q) => {
-        q.whereILike('customer_name', term).orWhereILike('id', term)
+        q.whereILike('customer_name', `%${term}%`).orWhereILike('id', `%${term}%`)
+        if (ordMatch) q.orWhere('order_number', Number(ordMatch[1]))
       })
     }
 
@@ -108,9 +123,11 @@ export class FarmOrderService {
     const trx = await db.transaction()
 
     try {
+      const orderNumber = await this.allocateOrderNumber(workspaceId, trx)
       const order = await FarmOrder.create(
         {
           workspaceId,
+          orderNumber,
           customerName: payload.customerName.trim(),
           contact: payload.contact ?? null,
           status: 'pending',
@@ -143,6 +160,8 @@ export class FarmOrderService {
         before: null,
         after: {
           status: 'pending',
+          orderNumber,
+          orderRef: formatOrderRef(orderNumber),
           customerName: order.customerName,
           items: payload.items,
           deliveryDate: deliveryDate?.toISO() ?? null,
@@ -415,9 +434,11 @@ export class FarmOrderService {
       if (order.recurringInterval) {
         const baseDue = order.deliveryDate ?? soldAt
         const nextDue = advanceDueDate(baseDue, order.recurringInterval)
+        const nextOrderNumber = await this.allocateOrderNumber(workspaceId, trx)
         const nextOrder = await FarmOrder.create(
           {
             workspaceId,
+            orderNumber: nextOrderNumber,
             customerName: order.customerName,
             contact: order.contact,
             status: 'pending',
@@ -450,15 +471,18 @@ export class FarmOrderService {
           before: null,
           after: {
             status: 'pending',
+            orderNumber: nextOrderNumber,
+            orderRef: formatOrderRef(nextOrderNumber),
             customerName: nextOrder.customerName,
             items,
             deliveryDate: nextDue.toISO(),
             recurringInterval: order.recurringInterval,
             spawnedFrom: order.id,
+            spawnedFromRef: formatOrderRef(order.orderNumber),
           },
           quantity: items.reduce((sum, i) => sum + i.crates, 0),
           recordedAt: soldAt,
-          note: `Recurring ${order.recurringInterval} order from ${order.id}`,
+          note: `Recurring ${order.recurringInterval} order from ${formatOrderRef(order.orderNumber)}`,
           trx,
         })
       }

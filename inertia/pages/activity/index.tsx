@@ -22,6 +22,7 @@ interface ActivityEntry {
   action: string
   entity: string
   entityId: string | null
+  entityLabel?: string | null
   quantity: number | null
   note: string | null
   recordedAt: string
@@ -164,9 +165,9 @@ export default function ActivityPage() {
                       </td>
                       <td className='py-3 pr-3 capitalize'>
                         {row.entity}
-                        {row.entityId ? (
-                          <span className='block text-xs text-muted-foreground truncate max-w-[120px]'>
-                            {row.entityId}
+                        {row.entity === 'order' && row.entityLabel ? (
+                          <span className='block text-xs text-muted-foreground'>
+                            {row.entityLabel}
                           </span>
                         ) : null}
                       </td>
