@@ -1,11 +1,13 @@
 import { Head, usePage } from '@inertiajs/react'
+import { Egg, Minus } from 'lucide-react'
 import { useState } from 'react'
 import { DashboardLayout } from '@/components/dashboard/layout'
 import { PageHeader } from '@/components/dashboard/page_header'
+import { EntryMenu } from '@/components/farm/entry-menu'
 import { StatusBadge } from '@/components/farm/status-badge'
 import { SyncIndicator } from '@/components/farm/sync-indicator'
 import { AppCard } from '@/components/ui/app-card'
-import { Button } from '@/components/ui/button'
+import { BaseModal } from '@/components/ui/base-modal'
 import { FormField } from '@/components/ui/form_field'
 import { Input } from '@/components/ui/input'
 import {
@@ -17,7 +19,6 @@ import {
 } from '@/components/ui/select'
 import { SimpleGrid } from '@/components/ui/simplegrid'
 import { StatCard } from '@/components/ui/stat-card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { farmMutate, formatDateTime, formatEggSize, formatNumber } from '@/lib/farm-api'
 
@@ -56,10 +57,26 @@ interface EggsPageProps {
   farmRole: string
 }
 
+const entryMeta: Record<
+  Direction,
+  { title: string; description: string; primaryText: string }
+> = {
+  add: {
+    title: 'Collect eggs',
+    description: 'Record eggs collected by size using crates and loose.',
+    primaryText: 'Save collection',
+  },
+  remove: {
+    title: 'Remove eggs',
+    description: 'Record eggs leaving stock (broken, spoiled, sold…).',
+    primaryText: 'Save removal',
+  },
+}
+
 export default function EggsPage() {
   const { props } = usePage<EggsPageProps>()
   const { stock, recentRecords, eggsPerCrate } = props
-  const [direction, setDirection] = useState<Direction>('add')
+  const [activeEntry, setActiveEntry] = useState<Direction | null>(null)
   const [size, setSize] = useState<EggSize>('large')
   const [crates, setCrates] = useState('0')
   const [loose, setLoose] = useState('0')
@@ -67,39 +84,56 @@ export default function EggsPage() {
   const [note, setNote] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
+  function resetForm() {
+    setSize('large')
+    setCrates('0')
+    setLoose('0')
+    setReason('')
+    setNote('')
+  }
+
+  function openEntry(direction: Direction) {
+    resetForm()
+    setActiveEntry(direction)
+  }
+
+  function closeEntry() {
+    setActiveEntry(null)
+    resetForm()
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!activeEntry) return
+
     const cratesNum = Number(crates) || 0
     const looseNum = Number(loose) || 0
     if (cratesNum < 0 || looseNum < 0 || (cratesNum === 0 && looseNum === 0)) return
-    if (direction === 'remove' && !reason.trim()) return
+    if (activeEntry === 'remove' && !reason.trim()) return
 
     setIsSaving(true)
     const ok = await farmMutate({
       path: '/farm/eggs',
       data: {
         size,
-        direction,
+        direction: activeEntry,
         crates: cratesNum,
         loose: looseNum,
-        reason: direction === 'remove' ? reason.trim() : undefined,
+        reason: activeEntry === 'remove' ? reason.trim() : undefined,
         note: note.trim() || null,
       },
       offlineType: 'eggs',
       successMessage:
-        direction === 'add'
+        activeEntry === 'add'
           ? `${formatEggSize(size)} eggs collected.`
           : `${formatEggSize(size)} eggs removed.`,
       errorFallback: 'Unable to record egg movement.',
     })
     setIsSaving(false)
-    if (ok) {
-      setCrates('0')
-      setLoose('0')
-      setReason('')
-      setNote('')
-    }
+    if (ok) closeEntry()
   }
+
+  const meta = activeEntry ? entryMeta[activeEntry] : null
 
   return (
     <DashboardLayout>
@@ -108,7 +142,28 @@ export default function EggsPage() {
         <PageHeader
           title='Eggs'
           description={`Stock by size. ${eggsPerCrate} eggs per crate.`}
-          actions={<SyncIndicator />}
+          actions={
+            <>
+              <EntryMenu
+                items={[
+                  {
+                    id: 'add',
+                    label: 'Collect eggs',
+                    description: 'Add crates and loose by size',
+                    icon: Egg,
+                  },
+                  {
+                    id: 'remove',
+                    label: 'Remove eggs',
+                    description: 'Broken, spoiled, or sold',
+                    icon: Minus,
+                  },
+                ]}
+                onSelect={(id) => openEntry(id as Direction)}
+              />
+              <SyncIndicator />
+            </>
+          }
         />
 
         <StatCard title='Total eggs' value={formatNumber(stock.totalEggs)} />
@@ -125,82 +180,6 @@ export default function EggsPage() {
             </AppCard>
           ))}
         </SimpleGrid>
-
-        <AppCard
-          title='Record eggs'
-          description='Collect or remove by size using crates and loose.'>
-          <Tabs value={direction} onValueChange={(v) => setDirection(v as Direction)}>
-            <TabsList className='mb-4 flex h-auto gap-1'>
-              <TabsTrigger value='add' className='min-h-11 px-4'>
-                Collect
-              </TabsTrigger>
-              <TabsTrigger value='remove' className='min-h-11 px-4'>
-                Remove
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value={direction}>
-              <form onSubmit={handleSubmit} className='space-y-4'>
-                <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-                  <FormField label='Size' required>
-                    <Select value={size} onValueChange={(v) => setSize((v || 'large') as EggSize)}>
-                      <SelectTrigger className='min-h-11 w-full h-auto'>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='small'>Small</SelectItem>
-                        <SelectItem value='medium'>Medium</SelectItem>
-                        <SelectItem value='large'>Large</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormField>
-                  <FormField label='Crates'>
-                    <Input
-                      type='number'
-                      min={0}
-                      step={1}
-                      className='min-h-11'
-                      value={crates}
-                      onChange={(e) => setCrates(e.target.value)}
-                    />
-                  </FormField>
-                  <FormField label='Loose eggs'>
-                    <Input
-                      type='number'
-                      min={0}
-                      step={1}
-                      className='min-h-11'
-                      value={loose}
-                      onChange={(e) => setLoose(e.target.value)}
-                    />
-                  </FormField>
-                  {direction === 'remove' && (
-                    <FormField label='Reason' required>
-                      <Input
-                        className='min-h-11'
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        placeholder='Broken, spoiled, sold…'
-                        required
-                      />
-                    </FormField>
-                  )}
-                </div>
-                <FormField label='Note'>
-                  <Textarea
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder='Optional detail'
-                    rows={2}
-                  />
-                </FormField>
-                <Button type='submit' size='lg' className='min-h-11' isLoading={isSaving}>
-                  {direction === 'add' ? 'Save collection' : 'Save removal'}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </AppCard>
 
         <AppCard title='Recent records'>
           {recentRecords.length === 0 ? (
@@ -248,6 +227,74 @@ export default function EggsPage() {
           )}
         </AppCard>
       </div>
+
+      <BaseModal
+        open={activeEntry !== null}
+        onOpenChange={(open) => {
+          if (!open) closeEntry()
+        }}
+        title={meta?.title ?? 'Record eggs'}
+        description={meta?.description}
+        primaryText={meta?.primaryText ?? 'Save'}
+        secondaryText='Cancel'
+        isLoading={isSaving}
+        className='max-w-lg'>
+        <form onSubmit={handleSubmit} className='space-y-4'>
+          <div className='grid gap-4 sm:grid-cols-2'>
+            <FormField label='Size' required>
+              <Select value={size} onValueChange={(v) => setSize((v || 'large') as EggSize)}>
+                <SelectTrigger className='min-h-11 w-full h-auto'>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='small'>Small</SelectItem>
+                  <SelectItem value='medium'>Medium</SelectItem>
+                  <SelectItem value='large'>Large</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
+            <FormField label='Crates'>
+              <Input
+                type='number'
+                min={0}
+                step={1}
+                className='min-h-11'
+                value={crates}
+                onChange={(e) => setCrates(e.target.value)}
+              />
+            </FormField>
+            <FormField label='Loose eggs'>
+              <Input
+                type='number'
+                min={0}
+                step={1}
+                className='min-h-11'
+                value={loose}
+                onChange={(e) => setLoose(e.target.value)}
+              />
+            </FormField>
+            {activeEntry === 'remove' && (
+              <FormField label='Reason' required>
+                <Input
+                  className='min-h-11'
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder='Broken, spoiled, sold…'
+                  required
+                />
+              </FormField>
+            )}
+          </div>
+          <FormField label='Note'>
+            <Textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder='Optional detail'
+              rows={2}
+            />
+          </FormField>
+        </form>
+      </BaseModal>
     </DashboardLayout>
   )
 }

@@ -1,4 +1,6 @@
 export { ErrorBoundary } from '../error-boundary'
+export { ErrorDetailsDialog, type ErrorDetails } from '../error-details-dialog'
+export { ErrorFallback } from '../error-fallback'
 export { Alert, AlertDescription, AlertTitle } from './alert'
 export {
   AlertDialog,

@@ -1,76 +1,92 @@
 import { Head, Link, router } from '@inertiajs/react'
-import { AlertCircle, ArrowLeft, Home, RefreshCw } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Bug, Home, RefreshCw } from 'lucide-react'
+import { useState } from 'react'
+import {
+  ErrorDetailsDialog,
+  type ErrorDetails,
+} from '@/components/error-details-dialog'
 import { PublicLayout } from '@/components/layouts/public'
 import { Button } from '@/components/ui/button'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface ServerErrorProps {
   error: {
     message?: string
     code?: string
     status?: number
+    stack?: string
   }
 }
 
 export default function ServerError({ error }: ServerErrorProps) {
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+
+  const details: ErrorDetails | null = error?.message
+    ? {
+        message: error.message,
+        code: error.code ?? null,
+        status: error.status ?? 500,
+        stack: error.stack ?? null,
+      }
+    : null
+
   return (
     <PublicLayout>
-      <Head title='Server Error - Friars Technologies' />
-      <div className='flex-1 flex items-center justify-center p-6'>
-        <div className='text-center max-w-md w-full'>
-          {/* 500 Visual */}
+      <Head title='Server Error' />
+      <div className='flex flex-1 items-center justify-center p-6'>
+        <div className='w-full max-w-md text-center'>
           <div className='relative mb-8'>
-            <div className='text-[12rem] font-bold text-muted/20 leading-none select-none'>500</div>
+            <div className='select-none text-[12rem] font-bold leading-none text-muted/20'>500</div>
             <div className='absolute inset-0 flex items-center justify-center'>
-              <div className='bg-destructive/10 rounded-full p-6'>
+              <div className='rounded-full bg-destructive/10 p-6'>
                 <AlertCircle className='h-16 w-16 text-destructive' />
               </div>
             </div>
           </div>
 
-          {/* Message */}
-          <h1 className='text-3xl font-bold tracking-tight mb-3'>Server Error</h1>
-          <p className='text-muted-foreground mb-6'>
-            We're sorry, but something went wrong on our end. Our team has been notified and is
-            working to fix the issue.
+          <h1 className='mb-3 text-3xl font-bold tracking-tight'>Server error</h1>
+          <p className='mb-8 text-muted-foreground'>
+            Something went wrong on our end. Try again in a moment, or view details if you need to
+            report the issue.
           </p>
 
-          {/* Error Details Card */}
-          {error?.message && (
-            <Card className='mb-6 text-left'>
-              <CardHeader>
-                <CardTitle className='text-sm'>Error Details</CardTitle>
-                <CardDescription className='text-xs font-mono break-all'>
-                  {error.message}
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          )}
-
-          {/* Actions */}
-          <div className='flex flex-col sm:flex-row items-center justify-center gap-3'>
+          <div className='flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap'>
             <Button
               variant='outline'
               onClick={() => router.reload()}
               className='w-full sm:w-auto'
               leftIcon={<RefreshCw className='h-4 w-4' />}>
-              Try Again
+              Try again
             </Button>
             <Button
               variant='outline'
               onClick={() => router.visit(-1 as unknown as string)}
               className='w-full sm:w-auto'
               leftIcon={<ArrowLeft className='h-4 w-4' />}>
-              Go Back
+              Go back
             </Button>
-            <Link href='/'>
-              <Button className='w-full sm:w-auto' leftIcon={<Home className='h-4 w-4' />}>
-                Back to Home
+            <Link href='/' className='w-full sm:w-auto'>
+              <Button className='w-full' leftIcon={<Home className='h-4 w-4' />}>
+                Back to home
               </Button>
             </Link>
+            {details && (
+              <Button
+                variant='ghost'
+                onClick={() => setIsDetailsOpen(true)}
+                className='w-full sm:w-auto'
+                leftIcon={<Bug className='h-4 w-4' />}>
+                View details
+              </Button>
+            )}
           </div>
         </div>
       </div>
+
+      <ErrorDetailsDialog
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+        details={details}
+      />
     </PublicLayout>
   )
 }

@@ -10,11 +10,18 @@ export default class HttpExceptionHandler extends ExceptionHandler {
   protected debug = !app.inProduction
 
   /**
-   * Status pages are used to display a custom HTML pages for certain error
-   * codes. You might want to enable them in production only, but feel
-   * free to enable them in development as well.
+   * Always render Inertia status pages so the app shows a branded error
+   * screen (with optional details) instead of the framework default.
    */
-  protected renderStatusPages = app.inProduction
+  protected renderStatusPages = true
+
+  /**
+   * Prefer branded status pages over the Adonis debug HTML page.
+   * Stack traces still ship to the details dialog when not in production.
+   */
+  protected isDebuggingEnabled(_ctx: HttpContext) {
+    return false
+  }
 
   /**
    * Status pages is a collection of error code range and a callback
@@ -23,13 +30,17 @@ export default class HttpExceptionHandler extends ExceptionHandler {
   protected statusPages: Record<StatusPageRange, StatusPageRenderer> = {
     '404': (error, ctx) => {
       if (ctx.inertia) {
-        return ctx.inertia.render('errors/not_found', { error })
+        return ctx.inertia.render('errors/not_found', {
+          error: serializeStatusError(error, 404),
+        })
       }
       return ctx.response.status(404).send({ error: 'Not found' })
     },
     '500..599': (error, ctx) => {
       if (ctx.inertia) {
-        return ctx.inertia.render('errors/server_error', { error })
+        return ctx.inertia.render('errors/server_error', {
+          error: serializeStatusError(error, error.status ?? 500),
+        })
       }
       return ctx.response.status(500).send({ error: 'Internal server error' })
     },
@@ -106,6 +117,18 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    */
   async report(error: unknown, ctx: HttpContext) {
     return super.report(error, ctx)
+  }
+}
+
+function serializeStatusError(
+  error: { message?: string; code?: string; status?: number; stack?: string },
+  fallbackStatus: number
+) {
+  return {
+    message: error.message ?? 'An unexpected error occurred',
+    code: error.code ?? null,
+    status: error.status ?? fallbackStatus,
+    stack: app.inProduction ? null : (error.stack ?? null),
   }
 }
 

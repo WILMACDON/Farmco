@@ -1,18 +1,18 @@
 import { Head, usePage } from '@inertiajs/react'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, PackageMinus, PackagePlus } from 'lucide-react'
 import { useState } from 'react'
 import { DashboardLayout } from '@/components/dashboard/layout'
 import { PageHeader } from '@/components/dashboard/page_header'
+import { EntryMenu } from '@/components/farm/entry-menu'
 import { StatusBadge } from '@/components/farm/status-badge'
 import { SyncIndicator } from '@/components/farm/sync-indicator'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AppCard } from '@/components/ui/app-card'
-import { Button } from '@/components/ui/button'
+import { BaseModal } from '@/components/ui/base-modal'
 import { FormField } from '@/components/ui/form_field'
 import { Input } from '@/components/ui/input'
 import { SimpleGrid } from '@/components/ui/simplegrid'
 import { StatCard } from '@/components/ui/stat-card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { farmMutate, formatDateTime, formatNumber } from '@/lib/farm-api'
 
@@ -42,18 +42,53 @@ interface FeedPageProps {
   farmRole: string
 }
 
+const entryMeta: Record<
+  Direction,
+  { title: string; description: string; primaryText: string; success: (bags: number) => string }
+> = {
+  add: {
+    title: 'Add bags',
+    description: 'Record a feed delivery or stock intake.',
+    primaryText: 'Save delivery',
+    success: (bags) => `${bags} bags added.`,
+  },
+  remove: {
+    title: 'Use bags',
+    description: 'Record bags used for feeding.',
+    primaryText: 'Save usage',
+    success: (bags) => `${bags} bags used.`,
+  },
+}
+
 export default function FeedPage() {
   const { props } = usePage<FeedPageProps>()
   const { stock, recentRecords } = props
-  const [direction, setDirection] = useState<Direction>('add')
+  const [activeEntry, setActiveEntry] = useState<Direction | null>(null)
   const [bags, setBags] = useState('1')
   const [note, setNote] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
   const daysLeft = stock.daysLeft ?? stock.estimatedDaysLeft
 
+  function resetForm() {
+    setBags('1')
+    setNote('')
+  }
+
+  function openEntry(direction: Direction) {
+    resetForm()
+    setActiveEntry(direction)
+  }
+
+  function closeEntry() {
+    setActiveEntry(null)
+    resetForm()
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!activeEntry) return
+
     const bagsNum = Number(bags)
     if (!bagsNum || bagsNum <= 0) return
 
@@ -61,20 +96,19 @@ export default function FeedPage() {
     const ok = await farmMutate({
       path: '/farm/feed',
       data: {
-        direction,
+        direction: activeEntry,
         bags: bagsNum,
         note: note.trim() || null,
       },
       offlineType: 'feed',
-      successMessage: direction === 'add' ? `${bagsNum} bags added.` : `${bagsNum} bags used.`,
+      successMessage: entryMeta[activeEntry].success(bagsNum),
       errorFallback: 'Unable to record feed movement.',
     })
     setIsSaving(false)
-    if (ok) {
-      setBags('1')
-      setNote('')
-    }
+    if (ok) closeEntry()
   }
+
+  const meta = activeEntry ? entryMeta[activeEntry] : null
 
   return (
     <DashboardLayout>
@@ -83,7 +117,28 @@ export default function FeedPage() {
         <PageHeader
           title='Feed'
           description='Bags on hand and daily use.'
-          actions={<SyncIndicator />}
+          actions={
+            <>
+              <EntryMenu
+                items={[
+                  {
+                    id: 'add',
+                    label: 'Add bags',
+                    description: 'Delivery or stock intake',
+                    icon: PackagePlus,
+                  },
+                  {
+                    id: 'remove',
+                    label: 'Use bags',
+                    description: 'Mark bags consumed',
+                    icon: PackageMinus,
+                  },
+                ]}
+                onSelect={(id) => openEntry(id as Direction)}
+              />
+              <SyncIndicator />
+            </>
+          }
         />
 
         {stock.isLow && (
@@ -104,45 +159,6 @@ export default function FeedPage() {
             value={stock.averageDailyUsage != null ? formatNumber(stock.averageDailyUsage, 2) : '—'}
           />
         </SimpleGrid>
-
-        <AppCard title='Record feed' description='Add deliveries or mark bags used.'>
-          <Tabs value={direction} onValueChange={(v) => setDirection(v as Direction)}>
-            <TabsList className='mb-4 flex h-auto gap-1'>
-              <TabsTrigger value='add' className='min-h-11 px-4'>
-                Add bags
-              </TabsTrigger>
-              <TabsTrigger value='remove' className='min-h-11 px-4'>
-                Use bags
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value={direction}>
-              <form onSubmit={handleSubmit} className='space-y-4'>
-                <FormField label='Bags' required>
-                  <Input
-                    type='number'
-                    min={0.001}
-                    step='any'
-                    className='min-h-11 max-w-xs'
-                    value={bags}
-                    onChange={(e) => setBags(e.target.value)}
-                    required
-                  />
-                </FormField>
-                <FormField label='Note'>
-                  <Textarea
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder='Optional detail'
-                    rows={2}
-                  />
-                </FormField>
-                <Button type='submit' size='lg' className='min-h-11' isLoading={isSaving}>
-                  {direction === 'add' ? 'Save delivery' : 'Save usage'}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </AppCard>
 
         <AppCard title='Recent records'>
           {recentRecords.length === 0 ? (
@@ -188,6 +204,40 @@ export default function FeedPage() {
           )}
         </AppCard>
       </div>
+
+      <BaseModal
+        open={activeEntry !== null}
+        onOpenChange={(open) => {
+          if (!open) closeEntry()
+        }}
+        title={meta?.title ?? 'Record feed'}
+        description={meta?.description}
+        primaryText={meta?.primaryText ?? 'Save'}
+        secondaryText='Cancel'
+        isLoading={isSaving}
+        className='max-w-md'>
+        <form onSubmit={handleSubmit} className='space-y-4'>
+          <FormField label='Bags' required>
+            <Input
+              type='number'
+              min={0.001}
+              step='any'
+              className='min-h-11'
+              value={bags}
+              onChange={(e) => setBags(e.target.value)}
+              required
+            />
+          </FormField>
+          <FormField label='Note'>
+            <Textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder='Optional detail'
+              rows={2}
+            />
+          </FormField>
+        </form>
+      </BaseModal>
     </DashboardLayout>
   )
 }

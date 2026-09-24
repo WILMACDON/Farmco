@@ -1,11 +1,13 @@
 import { Head, usePage } from '@inertiajs/react'
+import { ArrowRightLeft, Minus, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { DashboardLayout } from '@/components/dashboard/layout'
 import { PageHeader } from '@/components/dashboard/page_header'
+import { EntryMenu } from '@/components/farm/entry-menu'
 import { StatusBadge } from '@/components/farm/status-badge'
 import { SyncIndicator } from '@/components/farm/sync-indicator'
 import { AppCard } from '@/components/ui/app-card'
-import { Button } from '@/components/ui/button'
+import { BaseModal } from '@/components/ui/base-modal'
 import { FormField } from '@/components/ui/form_field'
 import { Input } from '@/components/ui/input'
 import {
@@ -17,7 +19,6 @@ import {
 } from '@/components/ui/select'
 import { SimpleGrid } from '@/components/ui/simplegrid'
 import { StatCard } from '@/components/ui/stat-card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { farmMutate, formatBirdBucket, formatDateTime, formatNumber } from '@/lib/farm-api'
 
@@ -68,20 +69,56 @@ const emptyForm = {
   note: '',
 }
 
+const entryMeta: Record<
+  Direction,
+  { title: string; description: string; primaryText: string; success: (qty: number) => string }
+> = {
+  add: {
+    title: 'Add birds',
+    description: 'Record new birds into a flock category.',
+    primaryText: 'Save addition',
+    success: (qty) => `${qty} birds added.`,
+  },
+  remove: {
+    title: 'Remove birds',
+    description: 'Record birds leaving the flock (sold, died, culled…).',
+    primaryText: 'Save removal',
+    success: (qty) => `${qty} birds removed.`,
+  },
+  move: {
+    title: 'Move birds',
+    description: 'Move birds between categories or health states.',
+    primaryText: 'Save move',
+    success: (qty) => `${qty} birds moved.`,
+  },
+}
+
 export default function BirdsPage() {
   const { props } = usePage<BirdsPageProps>()
   const { stock, recentRecords } = props
-  const [direction, setDirection] = useState<Direction>('add')
+  const [activeEntry, setActiveEntry] = useState<Direction | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [isSaving, setIsSaving] = useState(false)
 
+  function openEntry(direction: Direction) {
+    setForm(emptyForm)
+    setActiveEntry(direction)
+  }
+
+  function closeEntry() {
+    setActiveEntry(null)
+    setForm(emptyForm)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!activeEntry) return
+
     const quantity = Number(form.quantity)
     if (!Number.isInteger(quantity) || quantity < 1) return
 
     const payload: Record<string, unknown> = {
-      direction,
+      direction: activeEntry,
       production: form.production,
       quantity,
       note: form.note.trim() || null,
@@ -93,12 +130,12 @@ export default function BirdsPage() {
       payload.health = null
     }
 
-    if (direction === 'remove') {
+    if (activeEntry === 'remove') {
       if (!form.reason.trim()) return
       payload.reason = form.reason.trim()
     }
 
-    if (direction === 'move') {
+    if (activeEntry === 'move') {
       payload.toProduction = form.toProduction
       payload.toHealth = form.toProduction === 'chick' ? null : form.toHealth || null
     }
@@ -108,17 +145,14 @@ export default function BirdsPage() {
       path: '/farm/birds',
       data: payload,
       offlineType: 'birds',
-      successMessage:
-        direction === 'add'
-          ? `${quantity} birds added.`
-          : direction === 'remove'
-            ? `${quantity} birds removed.`
-            : `${quantity} birds moved.`,
+      successMessage: entryMeta[activeEntry].success(quantity),
       errorFallback: 'Unable to record bird movement.',
     })
     setIsSaving(false)
-    if (ok) setForm(emptyForm)
+    if (ok) closeEntry()
   }
+
+  const meta = activeEntry ? entryMeta[activeEntry] : null
 
   return (
     <DashboardLayout>
@@ -127,7 +161,34 @@ export default function BirdsPage() {
         <PageHeader
           title='Birds'
           description='Track flock counts, health, and movements.'
-          actions={<SyncIndicator />}
+          actions={
+            <>
+              <EntryMenu
+                items={[
+                  {
+                    id: 'add',
+                    label: 'Add birds',
+                    description: 'New arrivals into a category',
+                    icon: Plus,
+                  },
+                  {
+                    id: 'remove',
+                    label: 'Remove birds',
+                    description: 'Sold, died, or culled',
+                    icon: Minus,
+                  },
+                  {
+                    id: 'move',
+                    label: 'Move birds',
+                    description: 'Between category or health',
+                    icon: ArrowRightLeft,
+                  },
+                ]}
+                onSelect={(id) => openEntry(id as Direction)}
+              />
+              <SyncIndicator />
+            </>
+          }
         />
 
         <StatCard title='Total birds' value={formatNumber(stock.total)} />
@@ -154,143 +215,6 @@ export default function BirdsPage() {
             ))
           )}
         </SimpleGrid>
-
-        <AppCard
-          title='Record movement'
-          description='Add, remove, or move birds between categories.'>
-          <Tabs value={direction} onValueChange={(v) => setDirection(v as Direction)}>
-            <TabsList className='mb-4 flex h-auto flex-wrap gap-1'>
-              <TabsTrigger value='add' className='min-h-11 px-4'>
-                Add
-              </TabsTrigger>
-              <TabsTrigger value='remove' className='min-h-11 px-4'>
-                Remove
-              </TabsTrigger>
-              <TabsTrigger value='move' className='min-h-11 px-4'>
-                Move
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value={direction}>
-              <form onSubmit={handleSubmit} className='space-y-4'>
-                <div className='grid gap-4 sm:grid-cols-2'>
-                  <FormField label='Category' required>
-                    <Select
-                      value={form.production}
-                      onValueChange={(v) =>
-                        setForm((f) => ({ ...f, production: (v || 'laying') as BirdProduction }))
-                      }>
-                      <SelectTrigger className='min-h-11 w-full h-auto'>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='laying'>Laying</SelectItem>
-                        <SelectItem value='non_laying'>Non-laying</SelectItem>
-                        <SelectItem value='chick'>Chick</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormField>
-
-                  {form.production !== 'chick' && (
-                    <FormField label='Health' required>
-                      <Select
-                        value={form.health}
-                        onValueChange={(v) =>
-                          setForm((f) => ({ ...f, health: (v || 'well') as BirdHealth }))
-                        }>
-                        <SelectTrigger className='min-h-11 w-full h-auto'>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value='well'>Well</SelectItem>
-                          <SelectItem value='sick'>Sick</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormField>
-                  )}
-
-                  {direction === 'move' && (
-                    <>
-                      <FormField label='Move to category' required>
-                        <Select
-                          value={form.toProduction}
-                          onValueChange={(v) =>
-                            setForm((f) => ({
-                              ...f,
-                              toProduction: (v || 'laying') as BirdProduction,
-                            }))
-                          }>
-                          <SelectTrigger className='min-h-11 w-full h-auto'>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value='laying'>Laying</SelectItem>
-                            <SelectItem value='non_laying'>Non-laying</SelectItem>
-                            <SelectItem value='chick'>Chick</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormField>
-                      {form.toProduction !== 'chick' && (
-                        <FormField label='Move to health' required>
-                          <Select
-                            value={form.toHealth}
-                            onValueChange={(v) =>
-                              setForm((f) => ({ ...f, toHealth: (v || 'well') as BirdHealth }))
-                            }>
-                            <SelectTrigger className='min-h-11 w-full h-auto'>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value='well'>Well</SelectItem>
-                              <SelectItem value='sick'>Sick</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </FormField>
-                      )}
-                    </>
-                  )}
-
-                  <FormField label='Quantity' required>
-                    <Input
-                      type='number'
-                      min={1}
-                      step={1}
-                      className='min-h-11'
-                      value={form.quantity}
-                      onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
-                      required
-                    />
-                  </FormField>
-
-                  {direction === 'remove' && (
-                    <FormField label='Reason' required>
-                      <Input
-                        className='min-h-11'
-                        value={form.reason}
-                        onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
-                        placeholder='Sold, died, culled…'
-                        required
-                      />
-                    </FormField>
-                  )}
-                </div>
-
-                <FormField label='Note'>
-                  <Textarea
-                    value={form.note}
-                    onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
-                    placeholder='Optional detail'
-                    rows={2}
-                  />
-                </FormField>
-
-                <Button type='submit' size='lg' className='min-h-11' isLoading={isSaving}>
-                  Save movement
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </AppCard>
 
         <AppCard title='Recent records' description='Who changed what and when.'>
           {recentRecords.length === 0 ? (
@@ -340,6 +264,131 @@ export default function BirdsPage() {
           )}
         </AppCard>
       </div>
+
+      <BaseModal
+        open={activeEntry !== null}
+        onOpenChange={(open) => {
+          if (!open) closeEntry()
+        }}
+        title={meta?.title ?? 'Record movement'}
+        description={meta?.description}
+        primaryText={meta?.primaryText ?? 'Save'}
+        secondaryText='Cancel'
+        isLoading={isSaving}
+        className='max-w-lg'>
+        <form onSubmit={handleSubmit} className='space-y-4'>
+          <div className='grid gap-4 sm:grid-cols-2'>
+            <FormField label='Category' required>
+              <Select
+                value={form.production}
+                onValueChange={(v) =>
+                  setForm((f) => ({ ...f, production: (v || 'laying') as BirdProduction }))
+                }>
+                <SelectTrigger className='min-h-11 w-full h-auto'>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='laying'>Laying</SelectItem>
+                  <SelectItem value='non_laying'>Non-laying</SelectItem>
+                  <SelectItem value='chick'>Chick</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
+
+            {form.production !== 'chick' && (
+              <FormField label='Health' required>
+                <Select
+                  value={form.health}
+                  onValueChange={(v) =>
+                    setForm((f) => ({ ...f, health: (v || 'well') as BirdHealth }))
+                  }>
+                  <SelectTrigger className='min-h-11 w-full h-auto'>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='well'>Well</SelectItem>
+                    <SelectItem value='sick'>Sick</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+            )}
+
+            {activeEntry === 'move' && (
+              <>
+                <FormField label='Move to category' required>
+                  <Select
+                    value={form.toProduction}
+                    onValueChange={(v) =>
+                      setForm((f) => ({
+                        ...f,
+                        toProduction: (v || 'laying') as BirdProduction,
+                      }))
+                    }>
+                    <SelectTrigger className='min-h-11 w-full h-auto'>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='laying'>Laying</SelectItem>
+                      <SelectItem value='non_laying'>Non-laying</SelectItem>
+                      <SelectItem value='chick'>Chick</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+                {form.toProduction !== 'chick' && (
+                  <FormField label='Move to health' required>
+                    <Select
+                      value={form.toHealth}
+                      onValueChange={(v) =>
+                        setForm((f) => ({ ...f, toHealth: (v || 'well') as BirdHealth }))
+                      }>
+                      <SelectTrigger className='min-h-11 w-full h-auto'>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='well'>Well</SelectItem>
+                        <SelectItem value='sick'>Sick</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                )}
+              </>
+            )}
+
+            <FormField label='Quantity' required>
+              <Input
+                type='number'
+                min={1}
+                step={1}
+                className='min-h-11'
+                value={form.quantity}
+                onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
+                required
+              />
+            </FormField>
+
+            {activeEntry === 'remove' && (
+              <FormField label='Reason' required>
+                <Input
+                  className='min-h-11'
+                  value={form.reason}
+                  onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
+                  placeholder='Sold, died, culled…'
+                  required
+                />
+              </FormField>
+            )}
+          </div>
+
+          <FormField label='Note'>
+            <Textarea
+              value={form.note}
+              onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+              placeholder='Optional detail'
+              rows={2}
+            />
+          </FormField>
+        </form>
+      </BaseModal>
     </DashboardLayout>
   )
 }
