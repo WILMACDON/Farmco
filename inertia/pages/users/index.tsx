@@ -147,6 +147,17 @@ export default function UsersPage() {
     setBusyUserId(null)
   }
 
+  async function handleReactivate(userId: string) {
+    setBusyUserId(userId)
+    await farmMutate({
+      path: '/farm/users/reactivate',
+      data: { userId },
+      successMessage: 'User reactivated.',
+      errorFallback: 'Unable to reactivate user.',
+    })
+    setBusyUserId(null)
+  }
+
   async function handleSaveSettings(e: React.FormEvent) {
     e.preventDefault()
     const eggs = Number(eggsPerCrate)
@@ -300,12 +311,13 @@ export default function UsersPage() {
               <p className='text-sm text-muted-foreground'>No deactivated users.</p>
             ) : (
               <div className='overflow-x-auto'>
-                <table className='w-full min-w-[400px] text-sm'>
+                <table className='w-full min-w-[480px] text-sm'>
                   <thead>
                     <tr className='border-b border-border text-left text-muted-foreground'>
                       <th className='pb-2 pr-3 font-medium'>Name</th>
                       <th className='pb-2 pr-3 font-medium'>Email</th>
-                      <th className='pb-2 font-medium'>Role</th>
+                      <th className='pb-2 pr-3 font-medium'>Role</th>
+                      <th className='pb-2 font-medium'>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -315,8 +327,17 @@ export default function UsersPage() {
                           {member.user?.fullName || '—'}
                         </td>
                         <td className='py-3 pr-3'>{member.user?.email || '—'}</td>
-                        <td className='py-3'>
+                        <td className='py-3 pr-3'>
                           <StatusBadge status={member.farmRole} />
+                        </td>
+                        <td className='py-3'>
+                          <Button
+                            variant='outline'
+                            className='min-h-11'
+                            isLoading={busyUserId === member.userId}
+                            onClick={() => handleReactivate(member.userId)}>
+                            Reactivate
+                          </Button>
                         </td>
                       </tr>
                     ))}

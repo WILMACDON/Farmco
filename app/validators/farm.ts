@@ -113,6 +113,12 @@ export const deactivateFarmUserValidator = vine.compile(
   }),
 )
 
+export const reactivateFarmUserValidator = vine.compile(
+  vine.object({
+    userId: vine.string().trim().minLength(1),
+  }),
+)
+
 export const orgSettingsValidator = vine.compile(
   vine.object({
     eggsPerCrate: vine.number().withoutDecimals().min(1).max(100),

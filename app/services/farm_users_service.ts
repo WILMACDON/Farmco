@@ -380,6 +380,56 @@ export class FarmUsersService {
     }
   }
 
+  async reactivateUser(options: {
+    workspaceId: string
+    actorUserId: string
+    actorRole: WorkspaceRole
+    targetUserId: string
+  }): Promise<User> {
+    const { workspaceId, actorUserId, actorRole, targetUserId } = options
+
+    const member = await WorkspaceMember.query()
+      .where('workspace_id', workspaceId)
+      .where('user_id', targetUserId)
+      .preload('user')
+      .firstOrFail()
+
+    const targetFarmRole = toFarmRole(member.role)
+    this.assertCanManageTarget(actorRole, targetFarmRole)
+
+    if (member.role === 'owner') {
+      throw new Exception('Cannot change the workspace owner status', { status: 422 })
+    }
+
+    const user = member.user
+    if (user.status === 'active') return user
+
+    const trx = await db.transaction()
+    try {
+      user.useTransaction(trx)
+      user.status = 'active'
+      await user.save()
+
+      await activityLogService.log({
+        workspaceId,
+        userId: actorUserId,
+        action: 'user.reactivate',
+        entity: 'user',
+        entityId: user.id,
+        before: { status: 'inactive' },
+        after: { status: 'active' },
+        recordedAt: DateTime.now(),
+        trx,
+      })
+
+      await trx.commit()
+      return user
+    } catch (error) {
+      await trx.rollback()
+      throw error
+    }
+  }
+
   private assertCanManageTarget(actorRole: WorkspaceRole, targetFarmRole: FarmRole) {
     if (targetFarmRole === 'owner') {
       throw new Exception('Cannot manage the workspace owner', { status: 403 })

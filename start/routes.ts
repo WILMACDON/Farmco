@@ -33,7 +33,7 @@ const AdminController = () => import('#controllers/admin_controller')
 const AdminUsersController = () => import('#controllers/admin_users_controller')
 const AdminPlansController = () => import('#controllers/admin_plans_controller')
 const StatusController = () => import('#controllers/status_controller')
-const PricingController = () => import('#controllers/pricings_controller')
+// const PricingController = () => import('#controllers/pricings_controller')
 const BillingController = () => import('#controllers/billings_controller')
 const StripeWebhooksController = () => import('#controllers/stripe_webhooks_controller')
 const SettingsController = () => import('#controllers/settings_controller')
@@ -116,9 +116,10 @@ router.on('/contact').renderInertia('contact')
 router.on('/terms').renderInertia('terms')
 router.on('/verify-email').renderInertia('verify-email')
 router.on('/verify-email-change').renderInertia('verify-email-change')
-router.get('/pricing', [PricingController, 'index'])
-router.get('/blog', [BlogPostsController, 'index'])
-router.get('/blog/:slug', [BlogPostsController, 'show'])
+// Public pricing + blog temporarily hidden
+// router.get('/pricing', [PricingController, 'index'])
+// router.get('/blog', [BlogPostsController, 'index'])
+// router.get('/blog/:slug', [BlogPostsController, 'show'])
 router.get('/join', [WorkspaceInvitationsController, 'joinPage'])
 
 // Authenticated routes
@@ -239,6 +240,7 @@ router
 
     router.post('/users/invite', [FarmUsersController, 'store'])
     router.post('/users/deactivate', [FarmUsersController, 'deactivate'])
+    router.post('/users/reactivate', [FarmUsersController, 'reactivate'])
 
     router.get('/settings', [OrgSettingsController, 'show'])
     router.put('/settings', [OrgSettingsController, 'update'])

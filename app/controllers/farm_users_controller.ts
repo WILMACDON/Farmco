@@ -3,7 +3,11 @@ import WorkspaceInvitation from '#models/workspace_invitation'
 import farmUsersService from '#services/farm_users_service'
 import { farmHttpError, isFarmContext, requireFarmContext } from '#utils/farm_context'
 import { canManageWorkers, toFarmRole } from '#utils/farm_permissions'
-import { deactivateFarmUserValidator, inviteFarmUserValidator } from '#validators/farm'
+import {
+  deactivateFarmUserValidator,
+  inviteFarmUserValidator,
+  reactivateFarmUserValidator,
+} from '#validators/farm'
 
 export default class FarmUsersController {
   async index(ctx: HttpContext) {
@@ -102,6 +106,32 @@ export default class FarmUsersController {
       const err = error as { message?: string }
       return ctx.response.badRequest({
         error: err.message || 'Unable to deactivate user.',
+      })
+    }
+  }
+
+  async reactivate(ctx: HttpContext) {
+    const farm = await requireFarmContext(ctx)
+    if (!isFarmContext(farm)) return farm.errorResponse
+
+    if (!canManageWorkers(farm.membershipRole)) {
+      return ctx.response.forbidden({ error: 'You do not have permission to reactivate users.' })
+    }
+
+    const { userId } = await ctx.request.validateUsing(reactivateFarmUserValidator)
+
+    try {
+      await farmUsersService.reactivateUser({
+        workspaceId: farm.workspaceId,
+        actorUserId: farm.user.id,
+        actorRole: farm.membershipRole,
+        targetUserId: userId,
+      })
+      return ctx.response.ok({ message: 'User reactivated.' })
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      return ctx.response.badRequest({
+        error: err.message || 'Unable to reactivate user.',
       })
     }
   }

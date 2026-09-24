@@ -1,9 +1,8 @@
-import { Head, Link, router } from '@inertiajs/react'
+import { Link, router } from '@inertiajs/react'
 import { useMutation } from '@tanstack/react-query'
 import { useFormik } from 'formik'
 import { toast } from 'sonner'
-import { AppLogo } from '@/components/app_logo'
-import { PublicLayout } from '@/components/layouts/public'
+import { AuthShell } from '@/components/auth/auth_shell'
 import { PasswordInput } from '@/components/ui'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -50,133 +49,119 @@ export default function SignUp() {
   })
 
   return (
-    <PublicLayout showFooter={false}>
-      <Head title='Sign Up' />
-      <div className='flex min-h-svh items-center justify-center px-4 py-2'>
-        <div className='animate-fade-in-up w-full max-w-sm space-y-2 rounded-2xl border border-border bg-card p-6 shadow-lg shadow-black/5'>
-          <div className='flex justify-center'>
-            <AppLogo />
-          </div>
+    <AuthShell
+      title='Sign Up'
+      heading='Create your farm account'
+      panelLine='Set up once. Record every day.'
+      description={
+        <>
+          Already have an account?{' '}
+          <Link
+            href='/login'
+            className='text-primary underline underline-offset-4 hover:text-primary/90'>
+            Sign in
+          </Link>
+        </>
+      }
+      footer={
+        <p className='text-center text-sm text-muted-foreground'>
+          By signing up, you agree to our{' '}
+          <Link
+            href='/terms'
+            className='text-primary underline underline-offset-4 hover:text-primary/90'>
+            Terms of Service
+          </Link>
+        </p>
+      }>
+      <div className='grid grid-cols-1 gap-3'>
+        <a href='/google/redirect'>
+          <Button type='button' variant='outline' disabled={isPending} className='w-full'>
+            <img src='/icons/google.svg' alt='Google' className='h-4 w-4' />
+            Continue with Google
+          </Button>
+        </a>
+      </div>
 
-          {/* Heading */}
-          <div className='text-center space-y-1'>
-            <h1 className='font-display text-xl font-semibold tracking-tight'>
-              Create your farm account
-            </h1>
-            <p className='text-sm text-muted-foreground'>
-              Already have an account?{' '}
-              <Link
-                href='/login'
-                className='text-primary underline underline-offset-4 hover:text-primary/90'>
-                Sign in
-              </Link>
-            </p>
-          </div>
-
-          {/* OAuth buttons */}
-          <div className='grid grid-cols-1 gap-3'>
-            <a href='/google/redirect'>
-              <Button type='button' variant='outline' disabled={isPending} className='w-full'>
-                <img src='/icons/google.svg' alt='Google' className='h-4 w-4' />
-                Continue with Google
-              </Button>
-            </a>
-          </div>
-
-          {/* Divider */}
-          <div className='relative'>
-            <div className='absolute inset-0 flex items-center'>
-              <span className='w-full border-t' />
-            </div>
-            <div className='relative flex justify-center text-xs uppercase'>
-              <span className='bg-background px-2 text-muted-foreground'>Or</span>
-            </div>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={formik.handleSubmit} className='space-y-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='fullName'>Full name</Label>
-              <Input
-                id='fullName'
-                type='text'
-                {...formik.getFieldProps('fullName')}
-                required
-                placeholder='Ada Okonkwo'
-                className='min-h-12'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='organizationName'>Farm / organization name</Label>
-              <Input
-                id='organizationName'
-                type='text'
-                {...formik.getFieldProps('organizationName')}
-                required
-                minLength={2}
-                placeholder='Greenfield Poultry'
-                className='min-h-12'
-              />
-              <p className='text-xs text-muted-foreground'>
-                This becomes your farm account name. You can change it later in settings.
-              </p>
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='email'>Email</Label>
-              <Input
-                id='email'
-                type='email'
-                {...formik.getFieldProps('email')}
-                required
-                placeholder='you@example.com'
-                className='min-h-12'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='password'>Password</Label>
-              <PasswordInput
-                id='password'
-                {...formik.getFieldProps('password')}
-                required
-                placeholder='••••••••'
-                className='min-h-12'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='confirmPassword'>Confirm password</Label>
-              <PasswordInput
-                id='confirmPassword'
-                required
-                placeholder='••••••••'
-                {...formik.getFieldProps('confirmPassword')}
-                className='min-h-12'
-              />
-            </div>
-
-            <Button
-              type='submit'
-              className='w-full min-h-11'
-              isLoading={isPending}
-              loadingText='Creating account…'>
-              Sign up
-            </Button>
-          </form>
-
-          {/* Footer */}
-          <p className='text-center text-sm text-muted-foreground'>
-            By signing up, you agree to our{' '}
-            <Link
-              href='/terms'
-              className='text-primary underline underline-offset-4 hover:text-primary/90'>
-              Terms of Service
-            </Link>
-          </p>
+      <div className='relative'>
+        <div className='absolute inset-0 flex items-center'>
+          <span className='w-full border-t' />
+        </div>
+        <div className='relative flex justify-center text-xs uppercase'>
+          <span className='bg-card px-2 text-muted-foreground'>Or</span>
         </div>
       </div>
-    </PublicLayout>
+
+      <form onSubmit={formik.handleSubmit} className='space-y-4'>
+        <div className='space-y-2'>
+          <Label htmlFor='fullName'>Full name</Label>
+          <Input
+            id='fullName'
+            type='text'
+            {...formik.getFieldProps('fullName')}
+            required
+            placeholder='Ada Okonkwo'
+            className='min-h-12'
+          />
+        </div>
+
+        <div className='space-y-2'>
+          <Label htmlFor='organizationName'>Farm / organization name</Label>
+          <Input
+            id='organizationName'
+            type='text'
+            {...formik.getFieldProps('organizationName')}
+            required
+            minLength={2}
+            placeholder='Greenfield Poultry'
+            className='min-h-12'
+          />
+          <p className='text-xs text-muted-foreground'>
+            This becomes your farm account name. You can change it later in settings.
+          </p>
+        </div>
+
+        <div className='space-y-2'>
+          <Label htmlFor='email'>Email</Label>
+          <Input
+            id='email'
+            type='email'
+            {...formik.getFieldProps('email')}
+            required
+            placeholder='you@example.com'
+            className='min-h-12'
+          />
+        </div>
+
+        <div className='space-y-2'>
+          <Label htmlFor='password'>Password</Label>
+          <PasswordInput
+            id='password'
+            {...formik.getFieldProps('password')}
+            required
+            placeholder='••••••••'
+            className='min-h-12'
+          />
+        </div>
+
+        <div className='space-y-2'>
+          <Label htmlFor='confirmPassword'>Confirm password</Label>
+          <PasswordInput
+            id='confirmPassword'
+            required
+            placeholder='••••••••'
+            {...formik.getFieldProps('confirmPassword')}
+            className='min-h-12'
+          />
+        </div>
+
+        <Button
+          type='submit'
+          className='w-full min-h-11'
+          isLoading={isPending}
+          loadingText='Creating account…'>
+          Sign up
+        </Button>
+      </form>
+    </AuthShell>
   )
 }

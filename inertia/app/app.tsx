@@ -12,7 +12,7 @@ import { queryClient } from './query'
 const appName = import.meta.env.VITE_APP_NAME || 'Farmco'
 
 createInertiaApp({
-  progress: { color: '#5468FF' },
+  progress: { color: '#2F6B3F' },
 
   title: (title) => `${title} - ${appName}`,
 

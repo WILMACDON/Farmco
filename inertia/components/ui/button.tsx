@@ -13,7 +13,9 @@ const buttonVariants = cva(
         outline:
           'border border-input bg-secondary hover:bg-secondary/80 hover:text-secondary-foreground',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'hover:text-accent-foreground',
+        // Use muted + foreground — accent-foreground is dark brown for yolk surfaces and
+        // disappears on dark backgrounds if applied without a yolk fill.
+        ghost: 'hover:bg-muted hover:text-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
