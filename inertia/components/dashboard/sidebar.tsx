@@ -6,6 +6,7 @@ import {
   Egg,
   LayoutDashboard,
   LogOut,
+  Mail,
   Package,
   PanelLeft,
   PanelRight,
@@ -78,6 +79,9 @@ const userNavSections: NavSection[] = [
       { title: 'Activity', href: '/activity', icon: <ScrollText className='h-4 w-4' /> },
       { title: 'Users', href: '/users', icon: <Users className='h-4 w-4' /> },
       { title: 'Settings', href: '/settings', icon: <Settings className='h-4 w-4' /> },
+      ...(import.meta.env.DEV
+        ? [{ title: 'Dev emails', href: '/dev/emails', icon: <Mail className='h-4 w-4' /> }]
+        : []),
     ],
   },
 ]

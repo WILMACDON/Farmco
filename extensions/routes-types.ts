@@ -10,7 +10,9 @@ export const API_ROUTES = {
     '/notifications',
     '/notifications/unread-count',
     '/audits',
-    '/audits/recent'] as const,
+    '/audits/recent',
+    '/dev/emails',
+    '/dev/emails/:id'] as const,
   POST: ['/auth/signup',
     '/auth/login',
     '/auth/forgot-password',
@@ -37,7 +39,8 @@ export const API_ROUTES = {
     '/user/settings'] as const,
   DELETE: ['/user/avatar',
     '/user/account',
-    '/notifications/:id'] as const,
+    '/notifications/:id',
+    '/dev/emails'] as const,
 };
 
 type ReplaceParam<T extends string> =

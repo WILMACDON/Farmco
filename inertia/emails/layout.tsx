@@ -52,7 +52,7 @@ export function EmailSignature() {
         marginTop: '20px',
       }}>
       <EmailText style={{ marginBottom: '0px', margin: '0px' }}>Best regards,</EmailText>
-      <EmailText style={{ marginBottom: '0px', margin: '0px' }}>The ilemi Team</EmailText>
+      <EmailText style={{ marginBottom: '0px', margin: '0px' }}>The Farmco Team</EmailText>
     </EmailContainer>
   )
 }

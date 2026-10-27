@@ -1,10 +1,13 @@
 import string from '@adonisjs/core/helpers/string'
 import emitter from '@adonisjs/core/services/emitter'
 import logger from '@adonisjs/core/services/logger'
+import EmailListener from '#listeners/email_listener'
 import UserListener from '#listeners/user'
 
 emitter.on('user:created', [UserListener, 'userCreated'])
 emitter.on('user:deleted', [UserListener, 'userDeleted'])
+emitter.on('email:sent', [EmailListener, 'handleEmailSent'])
+emitter.on('email:failed', [EmailListener, 'handleEmailFailed'])
 
 emitter.on('db:connection:connect', (connectionName) => {
   console.log(`Database connection "${connectionName.clientName}" is now established.`)

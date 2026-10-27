@@ -47,6 +47,7 @@ const FarmActivityController = () => import('#controllers/farm_activity_controll
 const FarmUsersController = () => import('#controllers/farm_users_controller')
 const OrgSettingsController = () => import('#controllers/org_settings_controller')
 const FarmSyncController = () => import('#controllers/farm_sync_controller')
+const DevEmailsController = () => import('#controllers/dev_emails_controller')
 
 router.on('/').renderInertia('home')
 router.on('/home').renderInertia('home')
@@ -184,6 +185,16 @@ router
   })
   .prefix('api/v1')
   .use(throttle)
+
+// Development-only email inbox
+router.get('/dev/emails', [DevEmailsController, 'page'])
+router
+  .group(() => {
+    router.get('/', [DevEmailsController, 'index'])
+    router.get('/:id', [DevEmailsController, 'show'])
+    router.delete('/', [DevEmailsController, 'destroy'])
+  })
+  .prefix('api/v1/dev/emails')
 
 router
   .group(() => {

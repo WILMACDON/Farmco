@@ -1,17 +1,20 @@
+import emitter from '@adonisjs/core/services/emitter'
 import logger from '@adonisjs/core/services/logger'
 import type { Emails } from '@adonisjs/core/types'
 import type { Message } from '@adonisjs/mail'
 import mail from '@adonisjs/mail/services/main'
 import env from '#start/env'
 
-const NO_REPLY_EMAIL = env.get('NO_REPLY_EMAIL', 'do_not_reply@togetha.co.uk')
-const FROM_EMAIL = env.get('FROM_EMAIL', 'hello@togetha.co.uk')
+const NO_REPLY_EMAIL = env.get('NO_REPLY_EMAIL', 'noreply@farmco.app')
+const FROM_EMAIL = env.get('FROM_EMAIL', 'hello@farmco.app')
+
+type EmailHandlerResult = void | { html: string }
 
 type EmailHandlerFunction<T extends keyof Emails = keyof Emails> = (
   message: Message,
   data: Emails[T],
   options: Record<string, unknown>,
-) => Promise<void>
+) => Promise<EmailHandlerResult>
 
 type SendEmailParams<T extends keyof Emails> = {
   type: T
@@ -54,27 +57,32 @@ class EmailService {
     // Add recipient info if available
     if ('email' in data) {
       commonLogInfo.to = data.email
-      // if (isFakeEmail(data.email)) {
-      //   console.log('Skipping email for fake email', data.email)
-      //   return
-      // }
     }
     // Add subject if available
     if ('subject' in data) {
       commonLogInfo.subject = data.subject
     }
 
+    const isDevelopment = env.get('NODE_ENV') === 'development'
+    let renderedHtml: string | undefined
+
     const sendMail = async () => {
-      const isDevelopment = env.get('NODE_ENV') === 'development'
+      const compose = async (message: Message) => {
+        const result = await Promise.resolve(handler(message, data, options))
+        if (
+          result &&
+          typeof result === 'object' &&
+          'html' in result &&
+          typeof result.html === 'string'
+        ) {
+          renderedHtml = result.html
+        }
+      }
 
       if (isDevelopment) {
-        await mail.send(async (message) => {
-          await Promise.resolve(handler(message, data, options))
-        })
+        await mail.send(compose)
       } else {
-        await mail.sendLater(async (message) => {
-          await Promise.resolve(handler(message, data, options))
-        })
+        await mail.sendLater(compose)
       }
     }
 
@@ -84,9 +92,41 @@ class EmailService {
       await sendMail()
 
       logger.info(`Email queued successfully: ${type}`, commonLogInfo)
+
+      if (isDevelopment) {
+        await emitter.emit('email:sent', {
+          type,
+          data,
+          timestamp: new Date().toISOString(),
+          logInfo: {
+            type,
+            from: NO_REPLY_EMAIL,
+            replyTo: FROM_EMAIL,
+            ...commonLogInfo,
+          },
+          ...(renderedHtml && { renderedHtml }),
+        })
+      }
     } catch (error) {
       console.log('Failed to queue email', error)
       logger.error(`Failed to queue email: ${type}`, { ...commonLogInfo, error })
+
+      if (isDevelopment) {
+        await emitter.emit('email:failed', {
+          type,
+          data,
+          timestamp: new Date().toISOString(),
+          logInfo: {
+            type,
+            from: NO_REPLY_EMAIL,
+            replyTo: FROM_EMAIL,
+            ...commonLogInfo,
+          },
+          error: error instanceof Error ? error.message : String(error),
+          ...(renderedHtml && { renderedHtml }),
+        })
+      }
+
       throw error
     }
   }

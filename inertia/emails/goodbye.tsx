@@ -19,7 +19,7 @@ function Goodbye(props: Emails['goodbye']) {
       <EmailText>
         Best regards,
         <br />
-        The Team
+        The Farmco Team
       </EmailText>
     </EmailWrapper>
   )

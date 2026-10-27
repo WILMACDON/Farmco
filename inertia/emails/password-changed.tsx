@@ -23,7 +23,7 @@ function PasswordChanged(props: Emails['password-changed']) {
       <EmailText>
         Best regards,
         <br />
-        The Team
+        The Farmco Team
       </EmailText>
     </EmailWrapper>
   )

@@ -27,6 +27,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   SESSION_DRIVER: Env.schema.enum(['cookie', 'memory', 'database'] as const),
   FROM_EMAIL: Env.schema.string.optional(),
   REPLY_TO_EMAIL: Env.schema.string.optional(),
+  NO_REPLY_EMAIL: Env.schema.string.optional(),
 
   /*
   |----------------------------------------------------------
@@ -37,6 +38,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   SMTP_PORT: Env.schema.string.optional(),
   SMTP_USERNAME: Env.schema.string.optional(),
   SMTP_PASSWORD: Env.schema.string.optional(),
+  RESEND_API_KEY: Env.schema.string.optional(),
 
   /*
   |----------------------------------------------------------
