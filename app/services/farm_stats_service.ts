@@ -136,7 +136,7 @@ export class FarmStatsService {
       .filter((r) => r.direction === 'add')
       .reduce((sum, r) => sum + r.quantityEggs, 0)
 
-    const eggsBySize: Record<string, number> = { small: 0, medium: 0, large: 0 }
+    const eggsBySize: Record<string, number> = { small: 0, medium: 0, large: 0, mixed: 0 }
     for (const r of eggRecords.filter((row) => row.direction === 'add')) {
       eggsBySize[r.size] = (eggsBySize[r.size] ?? 0) + r.quantityEggs
     }

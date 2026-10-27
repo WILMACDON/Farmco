@@ -4,7 +4,7 @@ import type { DateTime } from 'luxon'
 import SuperBaseModel from './super_base.js'
 import Workspace from './workspace.js'
 
-export type EggSize = 'small' | 'medium' | 'large'
+export type EggSize = 'small' | 'medium' | 'large' | 'mixed'
 
 export default class EggStock extends SuperBaseModel {
   static table = 'egg_stocks'

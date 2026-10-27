@@ -6,7 +6,7 @@ const optionalNote = vine.string().trim().maxLength(2000).optional().nullable()
 
 const birdHealth = vine.enum(['well', 'sick'] as const)
 const birdProduction = vine.enum(['laying', 'non_laying', 'chick'] as const)
-const eggSize = vine.enum(['small', 'medium', 'large'] as const)
+const eggSize = vine.enum(['small', 'medium', 'large', 'mixed'] as const)
 
 export const birdMovementValidator = vine.compile(
   vine.object({

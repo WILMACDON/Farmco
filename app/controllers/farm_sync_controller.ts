@@ -91,7 +91,7 @@ export default class FarmSyncController {
             farm.user.id,
             entry.clientEntryId,
             {
-              size: payload.size as 'small' | 'medium' | 'large',
+              size: payload.size as 'small' | 'medium' | 'large' | 'mixed',
               direction: payload.direction as 'add' | 'remove',
               quantityEggs,
               reason: payload.reason as string | undefined,
@@ -140,7 +140,7 @@ export default class FarmSyncController {
               contact: (payload.contact as string | null | undefined) ?? null,
               items:
                 (payload.items as Array<{
-                  size: 'small' | 'medium' | 'large'
+                  size: 'small' | 'medium' | 'large' | 'mixed'
                   crates: number
                 }>) ?? [],
               orderDate: recordedAt.toISO() ?? undefined,

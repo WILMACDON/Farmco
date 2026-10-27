@@ -22,7 +22,7 @@ import { StatCard } from '@/components/ui/stat-card'
 import { Textarea } from '@/components/ui/textarea'
 import { farmMutate, formatDateTime, formatEggSize, formatNumber } from '@/lib/farm-api'
 
-type EggSize = 'small' | 'medium' | 'large'
+type EggSize = 'small' | 'medium' | 'large' | 'mixed'
 type Direction = 'add' | 'remove'
 
 interface EggSizeStock {
@@ -250,6 +250,7 @@ export default function EggsPage() {
                   <SelectItem value='small'>Small</SelectItem>
                   <SelectItem value='medium'>Medium</SelectItem>
                   <SelectItem value='large'>Large</SelectItem>
+                  <SelectItem value='mixed'>Mixed</SelectItem>
                 </SelectContent>
               </Select>
             </FormField>

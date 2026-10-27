@@ -39,7 +39,7 @@ export default class extends BaseSchema {
     this.schema.createTable('egg_stocks', (table) => {
       table.string('id').defaultTo(this.raw('nanoid()')).primary()
       table.string('workspace_id').notNullable().references('id').inTable('workspaces').onDelete('CASCADE')
-      table.enum('size', ['small', 'medium', 'large']).notNullable()
+      table.enum('size', ['small', 'medium', 'large', 'mixed']).notNullable()
       table.integer('quantity_eggs').notNullable().defaultTo(0)
       table.timestamp('created_at')
       table.timestamp('updated_at')
@@ -50,7 +50,7 @@ export default class extends BaseSchema {
       table.string('id').defaultTo(this.raw('nanoid()')).primary()
       table.string('workspace_id').notNullable().references('id').inTable('workspaces').onDelete('CASCADE')
       table.string('user_id').notNullable().references('id').inTable('users').onDelete('RESTRICT')
-      table.enum('size', ['small', 'medium', 'large']).notNullable()
+      table.enum('size', ['small', 'medium', 'large', 'mixed']).notNullable()
       table.enum('direction', ['add', 'remove']).notNullable()
       table.integer('quantity_eggs').notNullable()
       table.string('reason').nullable()
@@ -128,7 +128,7 @@ export default class extends BaseSchema {
     this.schema.createTable('order_items', (table) => {
       table.string('id').defaultTo(this.raw('nanoid()')).primary()
       table.string('order_id').notNullable().references('id').inTable('orders').onDelete('CASCADE')
-      table.enum('size', ['small', 'medium', 'large']).notNullable()
+      table.enum('size', ['small', 'medium', 'large', 'mixed']).notNullable()
       table.integer('crates').notNullable()
       table.timestamp('created_at')
       table.timestamp('updated_at')

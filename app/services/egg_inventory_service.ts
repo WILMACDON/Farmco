@@ -46,7 +46,7 @@ export interface EggMovementInput {
   recordedAt?: string
 }
 
-const EGG_SIZES: EggSize[] = ['small', 'medium', 'large']
+const EGG_SIZES: EggSize[] = ['small', 'medium', 'large', 'mixed']
 
 function toNumber(value: number | string): number {
   return typeof value === 'string' ? Number(value) : value

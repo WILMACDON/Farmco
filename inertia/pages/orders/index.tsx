@@ -42,7 +42,7 @@ import {
 } from '@/lib/farm-api'
 
 type OrderStatus = 'pending' | 'approved' | 'sold' | 'cancelled'
-type EggSize = 'small' | 'medium' | 'large'
+type EggSize = 'small' | 'medium' | 'large' | 'mixed'
 type RecurringInterval = 'weekly' | 'biweekly' | 'monthly'
 
 interface OrderItem {
@@ -528,6 +528,7 @@ export default function OrdersPage({
                       <SelectItem value='small'>Small</SelectItem>
                       <SelectItem value='medium'>Medium</SelectItem>
                       <SelectItem value='large'>Large</SelectItem>
+                      <SelectItem value='mixed'>Mixed</SelectItem>
                     </SelectContent>
                   </Select>
                   <Input
