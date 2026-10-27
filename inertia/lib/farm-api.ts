@@ -145,3 +145,13 @@ export function formatNumber(value: number | null | undefined, digits = 0) {
     minimumFractionDigits: digits > 0 ? Math.min(digits, 1) : 0,
   })
 }
+
+export function formatNaira(value: number | null | undefined) {
+  if (value == null || Number.isNaN(value)) return '—'
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value)
+}

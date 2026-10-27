@@ -146,12 +146,53 @@ export const statsFilterValidator = vine.compile(
   }),
 )
 
+const expenseCategory = vine.enum([
+  'feed',
+  'medication',
+  'labour',
+  'transport',
+  'utilities',
+  'equipment',
+  'housing',
+  'packaging',
+  'marketing',
+  'other',
+] as const)
+
+export const createExpenseValidator = vine.compile(
+  vine.object({
+    category: expenseCategory.clone(),
+    customType: vine.string().trim().minLength(1).maxLength(255).optional().nullable(),
+    amount: vine.number().min(0.01),
+    note: optionalNote.clone(),
+    clientEntryId: optionalClientEntryId.clone(),
+    recordedAt: vine.string().trim().optional(),
+  }),
+)
+
+export const expenseFilterValidator = vine.compile(
+  vine.object({
+    range: vine.enum(['7d', '30d', 'custom'] as const).optional(),
+    from: vine.string().trim().optional(),
+    to: vine.string().trim().optional(),
+  }),
+)
+
+export const expenseExportValidator = vine.compile(
+  vine.object({
+    format: vine.enum(['csv', 'pdf'] as const),
+    range: vine.enum(['7d', '30d', 'custom'] as const).optional(),
+    from: vine.string().trim().optional(),
+    to: vine.string().trim().optional(),
+  }),
+)
+
 export const farmSyncValidator = vine.compile(
   vine.object({
     entries: vine
       .array(
         vine.object({
-          type: vine.enum(['birds', 'eggs', 'feed', 'orders'] as const),
+          type: vine.enum(['birds', 'eggs', 'feed', 'orders', 'expenses'] as const),
           clientEntryId: vine.string().trim().minLength(1).maxLength(64),
           payload: vine.any(),
         }),

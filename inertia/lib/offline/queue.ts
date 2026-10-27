@@ -4,7 +4,7 @@ const DB_NAME = 'farmco-offline'
 const DB_VERSION = 1
 const STORE = 'queue'
 
-export type OfflineEntryType = 'birds' | 'eggs' | 'feed' | 'orders'
+export type OfflineEntryType = 'birds' | 'eggs' | 'feed' | 'orders' | 'expenses'
 
 export interface OfflineQueueEntry {
   id: string

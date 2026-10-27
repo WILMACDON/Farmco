@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Sun,
   Users,
+  Wallet,
   Wheat,
 } from 'lucide-react'
 import { createContext, type ReactNode, useContext, useEffect, useState } from 'react'
@@ -70,6 +71,7 @@ const userNavSections: NavSection[] = [
       { title: 'Eggs', href: '/eggs', icon: <Egg className='h-4 w-4' /> },
       { title: 'Feed', href: '/feed', icon: <Wheat className='h-4 w-4' /> },
       { title: 'Orders', href: '/orders', icon: <Package className='h-4 w-4' /> },
+      { title: 'Expenses', href: '/expenses', icon: <Wallet className='h-4 w-4' /> },
     ],
   },
   {

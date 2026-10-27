@@ -1,8 +1,10 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
+import type { ExpenseCategory } from '#models/expense_record'
 import Workspace from '#models/workspace'
 import birdInventoryService from '#services/bird_inventory_service'
 import eggInventoryService, { cratesAndLooseToEggs } from '#services/egg_inventory_service'
+import expenseService from '#services/expense_service'
 import farmOrderService from '#services/farm_order_service'
 import feedInventoryService from '#services/feed_inventory_service'
 import { isFarmContext, requireFarmContext } from '#utils/farm_context'
@@ -128,6 +130,27 @@ export default class FarmSyncController {
             ok: true,
             created: result.created,
             needsReview: result.needsReview,
+            id: result.recordId,
+          })
+        } else if (entry.type === 'expenses') {
+          const result = await expenseService.syncEntry(
+            farm.workspaceId,
+            farm.user.id,
+            entry.clientEntryId,
+            {
+              category: payload.category as ExpenseCategory,
+              customType: (payload.customType as string | null | undefined) ?? null,
+              amount: Number(payload.amount),
+              note: (payload.note as string | null | undefined) ?? null,
+              recordedAt: recordedAt.toISO() ?? undefined,
+            },
+          )
+
+          results.push({
+            clientEntryId: entry.clientEntryId,
+            type: entry.type,
+            ok: true,
+            created: result.created,
             id: result.recordId,
           })
         } else {
