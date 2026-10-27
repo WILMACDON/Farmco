@@ -41,11 +41,14 @@ export default function Login({ errors }: LoginProps) {
     e.preventDefault()
     post('/login', {
       preserveScroll: true,
-      onSuccess: () => {
+      onSuccess: (page) => {
+        if (page.url === '/login' || page.url.startsWith('/login?')) return
         toast.success('Welcome back!', { description: 'You have been logged in successfully.' })
       },
-      onError: () => {
-        toast.error('Invalid email or password')
+      onError: (errs) => {
+        const message =
+          typeof errs.message === 'string' ? errs.message : 'Invalid email or password'
+        toast.error(message)
       },
     })
   }

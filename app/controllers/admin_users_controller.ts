@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
 import User from '#models/user'
 import workspaceService from '#services/workspace_service'
+import { inertiaAwareError } from '#utils/inertia_http'
 import { updateAdminUserValidator } from '#validators/admin_user'
 
 export default class AdminUsersController {
@@ -58,18 +59,32 @@ export default class AdminUsersController {
     })
   }
 
-  async edit({ params, inertia, response }: HttpContext) {
+  async edit(ctx: HttpContext) {
+    const { params, inertia } = ctx
     const user = await User.find(params.id)
-    if (!user) return response.notFound({ error: 'User not found' })
+    if (!user) {
+      return inertiaAwareError(ctx, {
+        status: 404,
+        message: 'User not found',
+        redirectTo: '/admin/users',
+      })
+    }
 
     return inertia.render('admin/user-edit', {
       targetUser: user,
     })
   }
 
-  async update({ params, request, response }: HttpContext) {
+  async update(ctx: HttpContext) {
+    const { params, request, response } = ctx
     const user = await User.find(params.id)
-    if (!user) return response.notFound({ error: 'User not found' })
+    if (!user) {
+      return inertiaAwareError(ctx, {
+        status: 404,
+        message: 'User not found',
+        redirectTo: '/admin/users',
+      })
+    }
 
     const body = await request.validateUsing(updateAdminUserValidator)
 

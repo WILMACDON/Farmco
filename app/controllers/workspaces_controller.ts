@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Workspace from '#models/workspace'
 import WorkspaceInvitation from '#models/workspace_invitation'
 import workspaceService from '#services/workspace_service'
+import { inertiaAwareError, inertiaAwareSuccess, isInertiaRequest } from '#utils/inertia_http'
 import { createWorkspaceValidator, updateWorkspaceValidator } from '#validators/workspace'
 
 export default class WorkspacesController {
@@ -154,7 +155,8 @@ export default class WorkspacesController {
   /**
    * Update a workspace.
    */
-  async update({ auth, request, response }: HttpContext) {
+  async update(ctx: HttpContext) {
+    const { auth, request, response } = ctx
     const user = auth.getUserOrFail()
     const workspaceId = request.param('id')
     const { name } = await request.validateUsing(updateWorkspaceValidator)
@@ -164,14 +166,16 @@ export default class WorkspacesController {
     // Check if user is owner or admin
     const isAuthorized = await workspaceService.isOwnerOrAdmin(workspace.id, user.id)
     if (!isAuthorized) {
-      return response.forbidden({ error: 'You do not have permission to update this workspace.' })
+      return inertiaAwareError(ctx, {
+        status: 403,
+        message: 'You do not have permission to update this workspace.',
+      })
     }
 
     await workspace.merge({ name }).save()
 
-    const isInertia = request.header('X-Inertia')
-    if (isInertia) {
-      return response.redirect().status(303).withQs({ tab: 'sessions' }).back()
+    if (isInertiaRequest(ctx)) {
+      return response.redirect().status(303).withQs({ tab: 'workspace' }).toPath('/settings')
     }
     return response.ok({ message: 'Workspace updated', data: { workspace } })
   }
@@ -179,7 +183,8 @@ export default class WorkspacesController {
   /**
    * Delete a workspace.
    */
-  async destroy({ auth, request, response, session }: HttpContext) {
+  async destroy(ctx: HttpContext) {
+    const { auth, request, session } = ctx
     const user = auth.getUserOrFail()
     const workspaceId = request.param('id')
 
@@ -187,7 +192,10 @@ export default class WorkspacesController {
 
     // Only owner can delete
     if (workspace.createdByUserId !== user.id) {
-      return response.forbidden({ error: 'Only the workspace owner can delete this workspace.' })
+      return inertiaAwareError(ctx, {
+        status: 403,
+        message: 'Only the workspace owner can delete this workspace.',
+      })
     }
 
     await workspace.delete()
@@ -201,6 +209,12 @@ export default class WorkspacesController {
       }
     }
 
-    return response.ok({ message: 'Workspace deleted successfully' })
+    const remaining = await workspaceService.getUserWorkspaces(user.id)
+    const redirectTo = remaining.length > 0 ? '/settings?tab=workspace' : '/onboarding'
+
+    return inertiaAwareSuccess(ctx, {
+      message: 'Workspace deleted successfully',
+      redirectTo,
+    })
   }
 }

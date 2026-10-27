@@ -167,7 +167,7 @@ export default class AuthController {
       const user = await User.verifyCredentials(email, password)
 
       if (user.status === 'inactive') {
-        session.flash('error', { message: 'This account is inactive.' })
+        session.flashErrors({ message: 'This account is inactive.' })
         return response.redirect().status(303).toPath('/login')
       }
 
@@ -197,7 +197,8 @@ export default class AuthController {
             : '/dashboard'
       return response.redirect().status(303).toPath(redirectTo)
     } catch {
-      response.badRequest({ error: 'Invalid email or password.' })
+      session.flashErrors({ message: 'Invalid email or password.' })
+      return response.redirect().status(303).toPath('/login')
     }
   }
 

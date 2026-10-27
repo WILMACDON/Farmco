@@ -5,6 +5,7 @@ import BlogAuthor from '#models/blog_author'
 import BlogCategory from '#models/blog_category'
 import BlogPost from '#models/blog_post'
 import BlogTag from '#models/blog_tag'
+import { inertiaAwareError } from '#utils/inertia_http'
 import { createBlogPostValidator, updateBlogPostValidator } from '#validators/blog'
 
 export default class BlogPostsController {
@@ -26,7 +27,8 @@ export default class BlogPostsController {
     return inertia.render('blog/index', { posts })
   }
 
-  async show({ params, inertia, response }: HttpContext) {
+  async show(ctx: HttpContext) {
+    const { params, inertia } = ctx
     const post = await BlogPost.query()
       .where('slug', params.slug)
       .whereNotNull('published_at')
@@ -35,7 +37,11 @@ export default class BlogPostsController {
       .preload('authors')
       .first()
 
-    if (!post) return response.notFound({ error: 'Post not found' })
+    if (!post) {
+      return inertia.render('errors/not_found', {
+        error: { message: 'Post not found', code: null, status: 404, stack: null },
+      })
+    }
 
     return inertia.render('blog/show', { post })
   }
@@ -73,7 +79,8 @@ export default class BlogPostsController {
     })
   }
 
-  async edit({ params, inertia, response }: HttpContext) {
+  async edit(ctx: HttpContext) {
+    const { params, inertia } = ctx
     const post = await BlogPost.query()
       .where('id', params.id)
       .preload('category')
@@ -81,7 +88,13 @@ export default class BlogPostsController {
       .preload('authors')
       .first()
 
-    if (!post) return response.notFound({ error: 'Post not found' })
+    if (!post) {
+      return inertiaAwareError(ctx, {
+        status: 404,
+        message: 'Post not found',
+        redirectTo: '/admin/blog',
+      })
+    }
 
     const categories = await BlogCategory.query().orderBy('name', 'asc')
     const tags = await BlogTag.query().orderBy('name', 'asc')

@@ -3,6 +3,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import type { NextFn } from '@adonisjs/core/types/http'
 import { DateTime } from 'luxon'
 import sessionService from '#services/session_service'
+import { isInertiaRequest } from '#utils/inertia_http'
 
 /**
  * Middleware to update the last activity timestamp for the current session
@@ -34,6 +35,11 @@ export default class SessionActivityMiddleware {
           // Session was revoked elsewhere; force logout
           await ctx.auth.use('web').logout()
           ctx.session.forget('deviceSessionId')
+
+          if (isInertiaRequest(ctx)) {
+            ctx.session.flash('error', { message: 'Your session was revoked. Please sign in again.' })
+            return ctx.response.redirect().status(303).toPath('/login')
+          }
 
           if (ctx.request.url().startsWith('/api/')) {
             return ctx.response.unauthorized({ error: 'Session revoked' })

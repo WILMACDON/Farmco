@@ -2,6 +2,7 @@ import string from '@adonisjs/core/helpers/string'
 import type { HttpContext } from '@adonisjs/core/http'
 import Plan from '#models/plan'
 import stripeService from '#services/stripe_service'
+import { inertiaAwareError } from '#utils/inertia_http'
 import { createPlanValidator, updatePlanValidator } from '#validators/admin_plan'
 
 export default class AdminPlansController {
@@ -75,16 +76,30 @@ export default class AdminPlansController {
     return response.redirect('/admin/plans')
   }
 
-  async edit({ params, inertia, response }: HttpContext) {
+  async edit(ctx: HttpContext) {
+    const { params, inertia } = ctx
     const plan = await Plan.find(params.id)
-    if (!plan) return response.notFound({ error: 'Plan not found' })
+    if (!plan) {
+      return inertiaAwareError(ctx, {
+        status: 404,
+        message: 'Plan not found',
+        redirectTo: '/admin/plans',
+      })
+    }
 
     return inertia.render('admin/plans/edit', { plan })
   }
 
-  async update({ params, request, response, session }: HttpContext) {
+  async update(ctx: HttpContext) {
+    const { params, request, response, session } = ctx
     const plan = await Plan.find(params.id)
-    if (!plan) return response.notFound({ error: 'Plan not found' })
+    if (!plan) {
+      return inertiaAwareError(ctx, {
+        status: 404,
+        message: 'Plan not found',
+        redirectTo: '/admin/plans',
+      })
+    }
 
     const payload = await request.validateUsing(updatePlanValidator)
 
@@ -97,21 +112,16 @@ export default class AdminPlansController {
     return response.redirect('/admin/plans')
   }
 
-  async destroy({ params, response, session }: HttpContext) {
+  async destroy(ctx: HttpContext) {
+    const { params, response, session } = ctx
     const plan = await Plan.find(params.id)
-    if (!plan) return response.notFound({ error: 'Plan not found' })
-
-    // Optional: Archive in Stripe if needed, but for now just delete locally.
-    // If plans have active subscriptions, deleting them locally might break relationships
-    // unless cascading deletes are set up, or we use soft deletes.
-    // Assuming simple deletion for now as requested.
-
-    // Check for active subscriptions?
-    // const hasSubscriptions = await plan.related('workspaces').query().where('subscriptionStatus', 'active').first()
-    // if (hasSubscriptions) {
-    //   session.flash('error', { message: 'Cannot delete plan with active subscriptions. Archive it instead.' })
-    //   return response.redirect().back()
-    // }
+    if (!plan) {
+      return inertiaAwareError(ctx, {
+        status: 404,
+        message: 'Plan not found',
+        redirectTo: '/admin/plans',
+      })
+    }
 
     await plan.delete()
 

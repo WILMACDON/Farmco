@@ -1,6 +1,7 @@
 import { ExceptionHandler, type HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
 import type { StatusPageRange, StatusPageRenderer } from '@adonisjs/core/types/http'
+import { isInertiaRequest } from '#utils/inertia_http'
 
 export default class HttpExceptionHandler extends ExceptionHandler {
   /**
@@ -52,26 +53,50 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    */
   async handle(error: any, ctx: HttpContext) {
     const { response, session } = ctx
+    const inertiaVisit = isInertiaRequest(ctx)
 
-    // Handle Inertia requests differently
-    if (ctx.inertia) {
-      // Handle database errors
+    // Inertia visits must never receive bare JSON — flash + redirect instead.
+    if (inertiaVisit) {
+      if (error.code === 'E_VALIDATION_EXCEPTION' || error.code === 'E_VALIDATION_ERROR') {
+        session.flashValidationErrors(error)
+        return response.redirect().status(303).back()
+      }
+
+      if (error.code === 'E_INVALID_CREDENTIALS') {
+        session.flashErrors({ message: 'Your email or password is incorrect' })
+        return response.redirect().status(303).back()
+      }
+
+      if (error.code === 'E_AUTHORIZATION_FAILURE') {
+        const message = 'You are not authorized to perform this action'
+        session.flashErrors({ message })
+        session.flash('error', { message })
+        return response.redirect().status(303).back()
+      }
+
+      if (error.code === 'E_BAD_CSRF_TOKEN') {
+        const message = 'Your session expired. Please try again.'
+        session.flashErrors({ message })
+        session.flash('error', { message })
+        return response.redirect().status(303).back()
+      }
+
       if (error.code === '23502') {
-        session.flash('error', {
-          message: `The ${error.column} field is required and can not be null`,
-        })
-        return response.redirect().back()
+        const message = `The ${error.column} field is required and can not be null`
+        session.flashErrors({ message })
+        session.flash('error', { message })
+        return response.redirect().status(303).back()
       }
 
       if (error.code === '23505') {
-        session.flash('error', {
-          message: convertToReadableFormat(error.detail),
-        })
-        return response.redirect().back()
+        const message = convertToReadableFormat(error.detail)
+        session.flashErrors({ message })
+        session.flash('error', { message })
+        return response.redirect().status(303).back()
       }
     }
 
-    // Handle API requests (non-Inertia)
+    // API / non-Inertia JSON responses
     if (error.code === 'E_VALIDATION_EXCEPTION' || error.code === 'E_VALIDATION_ERROR') {
       return response.badRequest({
         error: 'Validation failed',

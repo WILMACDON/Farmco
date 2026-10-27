@@ -3,6 +3,7 @@ import type User from '#models/user'
 import type { WorkspaceRole } from '#models/workspace_member'
 import workspaceService from '#services/workspace_service'
 import { type FarmRole, toFarmRole } from '#utils/farm_permissions'
+import { inertiaAwareError, isInertiaRequest } from '#utils/inertia_http'
 
 export interface FarmContext {
   user: User
@@ -12,8 +13,8 @@ export interface FarmContext {
 }
 
 /**
- * Prefer an Inertia/HTML redirect over a bare JSON body for page visits.
- * API routes under /api/ keep JSON errors.
+ * Prefer flash + redirect for Inertia/HTML page visits over a bare JSON body.
+ * Non-Inertia `/api/` callers still get JSON.
  */
 export function farmHttpError(
   ctx: HttpContext,
@@ -23,12 +24,10 @@ export function farmHttpError(
 ) {
   const path = ctx.request.url()
   const isApi = path.startsWith('/api/')
-  const isInertia = Boolean(ctx.request.header('x-inertia'))
   const prefersHtml = ctx.request.accepts(['html', 'json']) === 'html'
 
-  if (!isApi && (isInertia || prefersHtml)) {
-    ctx.session.flash('error', { message })
-    return ctx.response.redirect(redirectTo)
+  if (isInertiaRequest(ctx) || (!isApi && prefersHtml)) {
+    return inertiaAwareError(ctx, { status, message, redirectTo })
   }
 
   if (status === 403) return ctx.response.forbidden({ error: message })

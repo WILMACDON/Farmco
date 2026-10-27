@@ -1,7 +1,6 @@
 import type { SharedProps } from '@adonisjs/inertia/types'
 import { router, useForm, usePage } from '@inertiajs/react'
 import { Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
 import { AppCard } from '@/components/ui/app-card'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/ui/form_field'
@@ -23,10 +22,8 @@ export function WorkspaceTab() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    put(`/api/v1/workspaces/${currentWorkspace.id}`, {
-      onSuccess: () => toast.success('Workspace updated successfully'),
-      onError: () => toast.error('Failed to update workspace'),
-    })
+    // Success/error toasts come from server flash via FlashToasts
+    put(`/api/v1/workspaces/${currentWorkspace.id}`)
   }
 
   const handleDelete = () => {
@@ -35,10 +32,7 @@ export function WorkspaceTab() {
         'Are you sure you want to delete this workspace? This action cannot be undone and will delete all data associated with this workspace.',
       )
     ) {
-      router.delete(`/api/v1/workspaces/${currentWorkspace.id}`, {
-        onSuccess: () => toast.success('Workspace deleted successfully'),
-        onError: () => toast.error('Failed to delete workspace'),
-      })
+      router.delete(`/api/v1/workspaces/${currentWorkspace.id}`)
     }
   }
 
